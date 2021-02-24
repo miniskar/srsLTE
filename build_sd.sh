@@ -48,10 +48,10 @@ sed  -i -e "s/target_link_libraries(\([^)]*\))/target_link_libraries(\1 boost_pr
 sed  -i -e "s/target_link_libraries(\([^)]*\))/target_link_libraries(\1 boost_program_options fftw3f mbedtls mbedcrypto)/g" ${SRSLTE_DIR}/lib/test/upper/CMakeLists.txt
 sed  -i -e "s/target_link_libraries(\([^)]*\))/target_link_libraries(\1 boost_program_options fftw3f mbedtls mbedcrypto)/g" ${SRSLTE_DIR}/srsue/test/upper/CMakeLists.txt
 
-export COMMON_FLAGS="-g -fPIC -include ${SRSLTE_DIR}/tools.new/defines.h -I${SRSLTE_DIR}/tools.new -Dtimespec_get=gettimeofday -DTIME_UTC=NULL -I${BOOST}/include -I${SCTP}/include -I${LIBCONFIG}/include"
+export COMMON_FLAGS="-g -fPIC -include ${SRSLTE_DIR}/tools.new/defines.h -I${SRSLTE_DIR}/tools.new -Dtimespec_get=gettimeofday -DTIME_UTC=NULL -I${ZEROMQ}/include -I${BOOST}/include -I${SCTP}/include -I${LIBCONFIG}/include"
 export SRSLTE_CFLAGS="${COMMON_FLAGS} "
 export SRSLTE_CXXFLAGS="${COMMON_FLAGS} "
-export SRSLTE_EXEFLAGS="-g -L${MBEDTLS}/lib -L${SCTP}/lib -L${BOOST}/libs/arm64-v8a -L${FFTW3_DIR}/lib -L${LIBCONFIG}/lib -lboost_program_options -lmbedtls -lmbedcrypto -lmbedx509 -lfftw3f -lsctp -lconfig -lconfig++"
+export SRSLTE_EXEFLAGS="-g -L${MBEDTLS}/lib -L${SCTP}/lib -L${BOOST}/libs/arm64-v8a -L${FFTW3_DIR}/lib -L${ZEROMQ}/lib -L${LIBCONFIG}/lib -lboost_program_options -lmbedtls -lmbedcrypto -lmbedx509 -lfftw3f -lsctp -lconfig -lconfig++ -lzmq"
 
 cmake -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake \
       -DANDROID_PLATFORM=28 -DANDROID_ABI=arm64-v8a -DANDROID_ARM_NEON=ON \
@@ -67,20 +67,17 @@ cmake -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake \
       -DCMAKE_BUILD_TYPE=Release Release \
       -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
       -DBoost_FOUND=ON \
-      -DBoost_NO_BOOST_CMAKE=TRUE \
-      -DBoost_NO_SYSTEM_PATHS=TRUE \
       -DBoost_LIBRARY_DIRS=${BOOST}/libs/arm64-v8a \
       -DBoost_LIBRARIES="boost_program_options" \
-      -DENABLE_GPROF=ON \
       -DLIBCONFIGPP_INCLUDE_DIR=$LIBCONFIG/include \
       -DLIBCONFIGPP_LIBRARY=$LIBCONFIG/lib \
       -DLIBCONFIG_INCLUDE_DIR=$LIBCONFIG/include \
       -DLIBCONFIG_LIBRARY=config \
       -DLIBCONFIGPP_STATIC_LIBRARY=$LIBCONFIG/lib \
       -DLIBCONFIGPP_LIBRARIES="config++" \
-      -DZEROMQ_INCLUDE_DIRS=$ZEROMQ/include \
+      -DZEROMQ_FOUND=TRUE \
       -DZEROMQ_LIBRARIES=zmq \
-      -DZEROMQ_PKG_LIBRARY_DIRS=$ZEROMQ/lib \
+      -DZEROMQ_INCLUDE_DIRS=$ZEROMQ/include \
       -DZEROMQ_LIBRARY_DIRS=$ZEROMQ/lib \
       -DFFTW3F_LIBRARY_DIRS=$FFTW/lib \
       -DFFTW3F_LIBRARY=$FFTW/lib \

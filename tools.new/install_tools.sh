@@ -40,7 +40,7 @@ if [ "x$install_lksctp" = "x1" ]; then
     export EXTCFLAGS='-DS_IREAD=S_IRUSR -DS_IWRITE=S_IWUSR -DS_IEXEC=S_IXUSR'
     sh ../../build_automake.sh 
     make -j16 
-    make -j16 install
+    make -j16 install-exec install-data
     cd ..
     cd ..
 fi
