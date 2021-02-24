@@ -1,10 +1,10 @@
 set -x
-install_boost=0
+install_boost=1
 install_fftw3=1
-install_lksctp=0
-install_mbedtls=0
-install_libzmq=0
-install_libconfig=0
+install_lksctp=1
+install_mbedtls=1
+install_libzmq=1
+install_libconfig=1
 if [ "x$install_boost" = "x1" ]; then
     wget https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.tar.gz -O boost_1_69_0.tar.gz
     tar -xzf boost_1_69_0.tar.gz
@@ -39,7 +39,8 @@ if [ "x$install_lksctp" = "x1" ]; then
     cd build 
     export EXTCFLAGS='-DS_IREAD=S_IRUSR -DS_IWRITE=S_IWUSR -DS_IEXEC=S_IXUSR'
     sh ../../build_automake.sh 
-    make -j16 install-exec
+    make -j16 
+    make -j16 install
     cd ..
     cd ..
 fi
@@ -50,7 +51,7 @@ if [ "x$install_mbedtls" = "x1" ]; then
     sed -i -e "s/EOF != c/EOF != (int)c/" programs/ssl/ssl_context_info.c
     mkdir -p build 
     cd build 
-    sh ../../build_cmake.sh -DCMAKE_C_FLAGS='-D__socklen_t_defined=1'
+    sh ../../build_cmake.sh -DCMAKE_C_FLAGS='-D__socklen_t_defined=1' -DUSE_SHARED_MBEDTLS_LIBRARY=TRUE
     make -j16 install
     cd ..
     cd ..

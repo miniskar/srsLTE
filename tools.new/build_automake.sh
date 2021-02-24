@@ -15,4 +15,4 @@ export RANLIB=$TOOLCHAIN/bin/$TARGET-ranlib
 export STRIP=$TOOLCHAIN/bin/$TARGET-strip
 
 export CFLAGS="-Dbcopy=memcpy -fPIC ${EXTCFLAGS}"
-../configure --prefix=$PWD/../install --host=$TARGET --enable-static $@ 
+../configure --prefix=$PWD/../install --host=$TARGET  $@ 
