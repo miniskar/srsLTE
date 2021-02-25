@@ -17,7 +17,7 @@ BOOST=$SRSLTE_DIR/$TOOLS_DIR/boost_for_android/build/install
 else
 BOOST=$SRSLTE_DIR/$TOOLS_DIR/boost_1_69_0/install
 fi
-export COMMON_FLAGS="-g -fPIC -I${ZEROMQ}/include -I${BOOST}/include -I${SCTP}/include -I${LIBCONFIG}/include"
+export COMMON_FLAGS="-g -fPIC -I${FFTW3_DIR}/include -I${ZEROMQ}/include -I${BOOST}/include -I${SCTP}/include -I${LIBCONFIG}/include"
 set -x 
 sed -i -e "s/^# Options/set(CMAKE_SYSTEM_PROCESSOR 'aarch64')/g" -e "s/^find_package(Boost/#find_package(Boost/g" -e "s/\<c99\>/c11/g" ${SRSLTE_DIR}/CMakeLists.txt 
 sed  -i -e "s/target_link_libraries(\([^)]*\))/target_link_libraries(\1 boost_program_options fftw3f mbedtls mbedcrypto mbedx509 sctp config config++ zmq)/g" ${SRSLTE_DIR}/lib/src/phy/ch_estimation/test/CMakeLists.txt
