@@ -15,6 +15,10 @@ fi
 if [ $# -ge 2 ]; then
     specific=$2
 fi 
+nodownload=0
+if [ $# -ge 3 ]; then
+    nodownload=$3
+fi 
 if [ "x$specific" = "xall" ]; then
     install_iris=1
     install_boost=1
@@ -94,10 +98,14 @@ fi
 fi
 
 if [ "x$install_boost" = "x1" ]; then
-    wget https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.tar.gz -O boost_1_69_0.tar.gz
-    tar -xzf boost_1_69_0.tar.gz
+    if [ "x$nodownload" = "x0" ]; then
+        wget https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.tar.gz -O boost_1_69_0.tar.gz
+        tar -xzf boost_1_69_0.tar.gz
+    fi
     if [ "$target_system" = "android" ]; then 
-        git clone https://github.com/dec1/Boost-for-Android.git boost_for_android
+        if [ "x$nodownload" = "x0" ]; then
+            git clone https://github.com/dec1/Boost-for-Android.git boost_for_androida
+        fi
         cd boost_for_android  
         export BOOST_DIR=$(pwd)/../boost_1_69_0
         export ABI_NAMES="arm64-v8a"
@@ -114,7 +122,9 @@ if [ "x$install_boost" = "x1" ]; then
 fi
 
 if [ "x$install_iris" = "x1" ]; then
-    #git clone -b oe https://code.ornl.gov/eck/brisbane-rts.git iris
+    if [ "x$nodownload" = "x0" ]; then
+        git clone -b oe https://code.ornl.gov/eck/brisbane-rts.git iris
+    fi
     cd iris
     mkdir -p build 
     cd build 
@@ -130,8 +140,10 @@ if [ "x$install_iris" = "x1" ]; then
 fi
 
 if [ "x$install_fftw3" = "x1" ]; then
-    wget http://www.fftw.org/fftw-3.3.8.tar.gz -O fftw-3.3.8.tar.gz
-    tar -xzf fftw-3.3.8.tar.gz
+    if [ "x$nodownload" = "x0" ]; then
+        wget http://www.fftw.org/fftw-3.3.8.tar.gz -O fftw-3.3.8.tar.gz
+        tar -xzf fftw-3.3.8.tar.gz
+    fi
     cd fftw-3.3.8
     mkdir -p build 
     cd build 
@@ -140,7 +152,6 @@ if [ "x$install_fftw3" = "x1" ]; then
     else
     cmake_build -DCMAKE_EXE_LINKER_FLAGS='-lm' -DENABLE_LONG_DOUBLE=OFF -DENABLE_FLOAT=ON -DENABLE_QUAD_PRECISION=OFF -DBUILD_TESTS=OFF
     fi
-
     make -j16 
     make -j16 install 
     cd ..
@@ -148,7 +159,9 @@ if [ "x$install_fftw3" = "x1" ]; then
 fi
 
 if [ "x$install_lksctp" = "x1" ]; then
-    git clone https://github.com/sctp/lksctp-tools.git
+    if [ "x$nodownload" = "x0" ]; then
+        git clone https://github.com/sctp/lksctp-tools.git
+    fi
     cd lksctp-tools
     sed -i -e "s/-lpthread//g" src/func_tests/Makefile.am
     ./bootstrap
@@ -160,14 +173,16 @@ if [ "x$install_lksctp" = "x1" ]; then
     export EXTCFLAGS=''
     fi
     automake_build 
-    make -j16 
+    make -j16  LDFLAGS='-lpthread'
     make -j16 install-exec install-data
     cd ..
     cd ..
 fi
 
 if [ "x$install_mbedtls" = "x1" ]; then
-    git clone -b mbedtls-2.24.0 https://github.com/ARMmbed/mbedtls.git
+    if [ "x$nodownload" = "x0" ]; then
+        git clone -b mbedtls-2.24.0 https://github.com/ARMmbed/mbedtls.git
+    fi
     cd mbedtls
     sed -i -e "s/EOF != c/EOF != (int)c/" programs/ssl/ssl_context_info.c
     mkdir -p build 
@@ -183,7 +198,9 @@ if [ "x$install_mbedtls" = "x1" ]; then
 fi
 
 if [ "x$install_libzmq" = "x1" ]; then
-    git clone https://github.com/zeromq/libzmq.git
+    if [ "x$nodownload" = "x0" ]; then
+        git clone https://github.com/zeromq/libzmq.git
+    fi
     cd libzmq
     mkdir -p build 
     cd build 
@@ -194,7 +211,9 @@ if [ "x$install_libzmq" = "x1" ]; then
 fi
 
 if [ "x$install_libconfig" = "x1" ]; then
-    git clone https://github.com/hyperrealm/libconfig.git
+    if [ "x$nodownload" = "x0" ]; then
+        git clone https://github.com/hyperrealm/libconfig.git
+    fi
     cd libconfig
     mkdir -p build 
     cd build 
