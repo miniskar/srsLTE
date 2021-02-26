@@ -68,6 +68,9 @@ if [ "$target_system" = "android" ]; then
 else
     export BOOST_LIB=${BOOST}/lib
     export COMMON_FLAGS="${COMMON_FLAGS}"
+    sed  -i -e "s/add_subdirectory(test)/#add_subdirectory(test)/g" ${SRSLTE_DIR}/srsue/CMakeLists.txt
+    sed  -i -e "s/add_subdirectory(test)/#add_subdirectory(test)/g" ${SRSLTE_DIR}/srsepc/CMakeLists.txt
+    sed  -i -e "s/add_subdirectory(test)/#add_subdirectory(test)/g" ${SRSLTE_DIR}/srsenb/CMakeLists.txt
 fi
 export SRSLTE_CFLAGS="${COMMON_FLAGS} "
 export SRSLTE_CXXFLAGS="${COMMON_FLAGS} "
