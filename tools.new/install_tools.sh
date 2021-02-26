@@ -61,21 +61,25 @@ fi
 cmake_build() {
     if [ "$target_system" = "android" ]; then
         if [ "x$static_build" = "x0" ]; then
-            cmake -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake -DANDROID_PLATFORM=28 -DANDROID_ABI=arm64-v8a -DANDROID_ARM_NEON=ON -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC=OFF .. $@
+            cmake -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake -DANDROID_PLATFORM=28 -DANDROID_ABI=arm64-v8a -DANDROID_ARM_NEON=ON -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC=OFF -DBUILD_SHARED=ON .. $@
         else
-            cmake -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake -DANDROID_PLATFORM=28 -DANDROID_ABI=arm64-v8a -DANDROID_ARM_NEON=ON -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC=ON .. $@
+            cmake -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake -DANDROID_PLATFORM=28 -DANDROID_ABI=arm64-v8a -DANDROID_ARM_NEON=ON -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC=ON -DBUILD_SHARED=OFF .. $@
         fi
     else
         if [ "x$static_build" = "x0" ]; then
-            cmake -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC=OFF .. $@
+            cmake -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC=OFF -DBUILD_SHARED=ON .. $@
         else
-            cmake -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC=ON .. $@
+            cmake -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC=ON -DBUILD_SHARED=OFF .. $@
         fi
     fi
 }
 automake_build() {
     export CFLAGS="-fPIC ${EXTCFLAGS}"
-    ../configure --prefix=$PWD/../install --host=$TARGET  $@ 
+    if [ "x$static_build" = "x0" ]; then
+        ../configure --prefix=$PWD/../install --host=$TARGET  --disable-static --enable-shared $@ 
+    else
+        ../configure --prefix=$PWD/../install --host=$TARGET  --enable-static  --disable-shared $@ 
+    fi
 }
 if [ "$target_system" = "android" ]; then
 export TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/linux-x86_64
@@ -198,10 +202,14 @@ if [ "x$install_mbedtls" = "x1" ]; then
     sed -i -e "s/EOF != c/EOF != (int)c/" programs/ssl/ssl_context_info.c
     mkdir -p build 
     cd build 
+    comp_flag="-DUSE_SHARED_MBEDTLS_LIBRARY=TRUE"
+    if [ "x$static_build" = "x1" ]; then
+        comp_flag="-DUSE_STATIC_MBEDTLS_LIBRARY=TRUE"
+    fi
     if [ "$target_system" = "android" ]; then 
-    cmake_build -DCMAKE_C_FLAGS='-D__socklen_t_defined=1' -DUSE_SHARED_MBEDTLS_LIBRARY=TRUE
+    cmake_build -DCMAKE_C_FLAGS='-D__socklen_t_defined=1' ${comp_flag}
     else
-    cmake_build -DCMAKE_C_FLAGS='-Wno-type-limits' -DUSE_SHARED_MBEDTLS_LIBRARY=TRUE
+    cmake_build -DCMAKE_C_FLAGS='-Wno-type-limits' ${comp_flag}
     fi
     make -j16 install
     cd ..
