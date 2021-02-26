@@ -18,6 +18,16 @@ else
 BOOST=$SRSLTE_DIR/$TOOLS_DIR/boost_1_69_0/install
 fi
 export COMMON_FLAGS="-g -fPIC -I${FFTW3_DIR}/include -I${ZEROMQ}/include -I${BOOST}/include -I${SCTP}/include -I${LIBCONFIG}/include"
+
+append_to_test_cmake() 
+{
+    f=$1
+    echo "" >> $f
+    echo 'set(CMAKE_C_LINK_EXECUTABLE "${CMAKE_C_COMPILER} <CMAKE_C_LINK_FLAGS>  <FLAGS> <LINK_FLAGS> <OBJECTS> <LINK_LIBRARIES>  -lfftw3f -lmbedtls -lmbedcrypto -lmbedx509 -lsctp -lconfig -lzmq -o <TARGET>")' >> $f
+    echo "" >> $f
+    echo 'set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_COMPILER} <CMAKE_CXX_LINK_FLAGS> <FLAGS> <LINK_FLAGS>  <OBJECTS> <LINK_LIBRARIES>  -lfftw3f -lmbedtls -lmbedcrypto -lmbedx509 -lsctp -lconfig -lconfig++ -lzmq -o <TARGET>")' >> $f
+    echo "" >> $f
+}
 set -x 
 sed -i -e "s/^# Options/set(CMAKE_SYSTEM_PROCESSOR 'aarch64')/g" -e "s/^find_package(Boost/#find_package(Boost/g" -e "s/\<c99\>/c11/g" ${SRSLTE_DIR}/CMakeLists.txt 
 sed  -i -e "s/target_link_libraries(\([^)]*\))/target_link_libraries(\1 boost_program_options fftw3f mbedtls mbedcrypto mbedx509 sctp config config++ zmq)/g" ${SRSLTE_DIR}/lib/src/phy/ch_estimation/test/CMakeLists.txt
@@ -36,10 +46,11 @@ sed  -i -e "s/target_link_libraries(\([^)]*\))/target_link_libraries(\1 boost_pr
 sed  -i -e "s/target_link_libraries(\([^)]*\))/target_link_libraries(\1 boost_program_options fftw3f mbedtls mbedcrypto mbedx509 sctp config config++ zmq)/g" ${SRSLTE_DIR}/lib/test/upper/CMakeLists.txt
 sed  -i -e "s/target_link_libraries(\([^)]*\))/target_link_libraries(\1 boost_program_options fftw3f mbedtls mbedcrypto mbedx509 sctp config config++ zmq)/g" ${SRSLTE_DIR}/srsue/test/upper/CMakeLists.txt
 sed  -i -e "s/target_link_libraries(\([^)]*\))/target_link_libraries(\1 boost_program_options fftw3f mbedtls mbedcrypto mbedx509 sctp config config++ zmq)/g" ${SRSLTE_DIR}/srsenb/test/upper/CMakeLists.txt
-sed  -i -e "s/target_link_libraries(\([^)]*\))/target_link_libraries(\1 boost_program_options fftw3f mbedtls mbedcrypto mbedx509 sctp config config++ zmq)/g" ${SRSLTE_DIR}/srsenb/test/mac/CMakeLists.txt
+sed  -i -e "s/target_link_libraries(\([^)]*\))/target_link_libraries(\1 boost_program_options fftw3f mbedtls mbedcrypto mbedx509 sctp config config++ zmq)/g" ${SRSLTE_DIR}/srsenb/test/mac/CMakeLists.txt   
 sed  -i -e "s/\${CMAKE_THREAD_LIBS_INIT}/$\{CMAKE_THREAD_LIBS_INIT} mbedtls mbedcrypto fftw3f zmq sctp config config++ mbedx509/g" ${SRSLTE_DIR}/srsue/src/CMakeLists.txt
 sed  -i -e "s/\${CMAKE_THREAD_LIBS_INIT}/$\{CMAKE_THREAD_LIBS_INIT} mbedtls mbedcrypto fftw3f zmq sctp config config++ mbedx509/g" ${SRSLTE_DIR}/srsepc/src/CMakeLists.txt
 sed  -i -e "s/\${CMAKE_THREAD_LIBS_INIT}/$\{CMAKE_THREAD_LIBS_INIT} mbedtls mbedcrypto fftw3f zmq sctp config config++ mbedx509/g" ${SRSLTE_DIR}/srsenb/src/CMakeLists.txt
+sed  -i -e "s/\<SHARED\>/STATIC/g" ${SRSLTE_DIR}/lib/src/phy/rf/CMakeLists.txt
 if [ "$target_system" = "android" ]; then
     sed -i -e "s/struct timespec now = {}/struct timeval now/g" -e "s/timespec_get/gettimeofday/g" -e "s/TIME_UTC/NULL/g"  ${SRSLTE_DIR}/lib/src/phy/utils/ringbuffer.c
     sed -i -e "s/\<connect\>(q->sockfd, \&/connect(q->sockfd, (struct sockaddr *)\&/g" ${SRSLTE_DIR}/lib/src/phy/io/netsink.c
@@ -61,16 +72,24 @@ if [ "$target_system" = "android" ]; then
     sed -i -e "s/s = pthread_getaffinity_np(.*cpuset)/ { PTHREAD_GETAFFINITY(s, cpuset); }/g" ${SRSLTE_DIR}/lib/src/common/threads.c
     sed -i -e "s/ dur.count()/ (long)dur.count()/g" -e "s/ duration_cast<TUnit>(tmax).count()/ (long)duration_cast<TUnit>(tmax).count()/g" -e "s/ duration_cast<TUnit>(tmin).count()/ (long)duration_cast<TUnit>(tmin).count()/g" ${SRSLTE_DIR}/lib/src/common/time_prof.cc
     sed -i -e "s/__in6_u\.__u6_addr8/in6_u.u6_addr8/g" -e "s/linux\/udp\.h/netinet\/udp.h/g" ${SRSLTE_DIR}/srsue/src/stack/upper/tft_packet_filter.cc
-    sed -i -e "s/\<SHARED\>/STATIC/g" ${SRSLTE_DIR}/lib/src/phy/rf/CMakeLists.txt
     sed -i -e "s/std::chrono::duration_cast<std::chrono::milliseconds>(dur).count/(long)std::chrono::duration_cast<std::chrono::milliseconds>(dur).count/g" ${SRSLTE_DIR}/srsue/src/stack/ue_stack_lte.cc
     export BOOST_LIB=${BOOST}/libs/arm64-v8a
     export COMMON_FLAGS="${COMMON_FLAGS} -include ${SRSLTE_DIR}/tools.new/defines.h -I${SRSLTE_DIR}/tools.new -Dtimespec_get=gettimeofday -DTIME_UTC=NULL"
 else
+    append_to_test_cmake "${SRSLTE_DIR}/lib/test/common/CMakeLists.txt"
+    append_to_test_cmake ${SRSLTE_DIR}/lib/test/phy/CMakeLists.txt
+    append_to_test_cmake ${SRSLTE_DIR}/lib/test/srslog/CMakeLists.txt
+    append_to_test_cmake ${SRSLTE_DIR}/lib/test/upper/CMakeLists.txt
+    append_to_test_cmake ${SRSLTE_DIR}/srsue/test/phy/CMakeLists.txt
+    append_to_test_cmake ${SRSLTE_DIR}/srsue/test/upper/CMakeLists.txt
+    append_to_test_cmake ${SRSLTE_DIR}/srsenb/test/upper/CMakeLists.txt
+    append_to_test_cmake ${SRSLTE_DIR}/srsenb/test/mac/CMakeLists.txt
+    append_to_test_cmake ${SRSLTE_DIR}/srsenb/test/phy/CMakeLists.txt
     export BOOST_LIB=${BOOST}/lib
     export COMMON_FLAGS="${COMMON_FLAGS}"
-    sed  -i -e "s/add_subdirectory(test)/#add_subdirectory(test)/g" ${SRSLTE_DIR}/srsue/CMakeLists.txt
-    sed  -i -e "s/add_subdirectory(test)/#add_subdirectory(test)/g" ${SRSLTE_DIR}/srsepc/CMakeLists.txt
-    sed  -i -e "s/add_subdirectory(test)/#add_subdirectory(test)/g" ${SRSLTE_DIR}/srsenb/CMakeLists.txt
+    #sed  -i -e "s/add_subdirectory(test)/#add_subdirectory(test)/g" ${SRSLTE_DIR}/srsue/CMakeLists.txt
+    #sed  -i -e "s/add_subdirectory(test)/#add_subdirectory(test)/g" ${SRSLTE_DIR}/srsepc/CMakeLists.txt
+    #sed  -i -e "s/add_subdirectory(test)/#add_subdirectory(test)/g" ${SRSLTE_DIR}/srsenb/CMakeLists.txt
 fi
 export SRSLTE_CFLAGS="${COMMON_FLAGS} "
 export SRSLTE_CXXFLAGS="${COMMON_FLAGS} "
