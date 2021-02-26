@@ -1,4 +1,5 @@
 set -x
+static_build=1
 install_iris=1
 install_boost=1
 install_fftw3=1
@@ -59,9 +60,17 @@ else
 fi
 cmake_build() {
     if [ "$target_system" = "android" ]; then
-    cmake -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake -DANDROID_PLATFORM=28 -DANDROID_ABI=arm64-v8a -DANDROID_ARM_NEON=ON -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC=OFF .. $@
+        if [ "x$static_build" = "x0" ]; then
+            cmake -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake -DANDROID_PLATFORM=28 -DANDROID_ABI=arm64-v8a -DANDROID_ARM_NEON=ON -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC=OFF .. $@
+        else
+            cmake -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake -DANDROID_PLATFORM=28 -DANDROID_ABI=arm64-v8a -DANDROID_ARM_NEON=ON -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC=ON .. $@
+        fi
     else
-    cmake -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC=OFF .. $@
+        if [ "x$static_build" = "x0" ]; then
+            cmake -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC=OFF .. $@
+        else
+            cmake -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC=ON .. $@
+        fi
     fi
 }
 automake_build() {
@@ -165,16 +174,18 @@ if [ "x$install_lksctp" = "x1" ]; then
     cd lksctp-tools
     sed -i -e "s/-lpthread//g" src/func_tests/Makefile.am
     ./bootstrap
-    mkdir -p build 
-    cd build
+    SRSLD_FLAG=""
     if [ "$target_system" = "android" ]; then 
     export EXTCFLAGS='-Dbcopy=memcpy -DS_IREAD=S_IRUSR -DS_IWRITE=S_IWUSR -DS_IEXEC=S_IXUSR'
     else
     export EXTCFLAGS=''
+    SRSLD_FLAG="-lpthread"
     fi
+    mkdir -p build
+    cd build 
     automake_build 
-    make -j16  LDFLAGS='-lpthread'
-    make -j16 install-exec install-data
+    make -j16 LDFLAGS="$SRSLD_FLAG"
+    make -j16 LDFLAGS="$SRSLD_FLAG" install-exec install-data
     cd ..
     cd ..
 fi
