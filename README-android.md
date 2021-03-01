@@ -5,7 +5,7 @@ srsLTE on Android
 There are two ways to run srsLTE on Android
 
 ### Compile using Aarch64-gnu  (Recommended)
-Makesure to have ARM cross compiler toolchain (aarch64-linux-gnu-*) 7.5.0
+Makesure to have ARM cross compiler toolchain (aarch64-linux-gnu-*) 7.5.0.
     ```
     $ cd tools.new 
     $ sh install_tools.sh rootfs all 
