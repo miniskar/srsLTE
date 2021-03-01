@@ -45,6 +45,7 @@ There are two ways to run srsLTE on Android
 
 ### Compile using Aarch64-gnu 
 Makesure to have ARM cross compiler toolchain (aarch64-linux-gnu-*) 7.5.0
+
     ```
     $ cd tools.new 
     $ sh install_tools.sh rootfs all 
@@ -57,6 +58,7 @@ Makesure to have ARM cross compiler toolchain (aarch64-linux-gnu-*) 7.5.0
     $ cd ..
     $ sh create_dist.sh 
     ```
+    
 The rootfs binaries are available in install.tar.gz
 
 ## Setup 
