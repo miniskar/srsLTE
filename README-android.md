@@ -1,10 +1,16 @@
 srsLTE on Android
 =================
 
-Prerequisite
-------------
+## Build SRSLTE
 There are two ways to run srsLTE on Android
-1. Compile using Android NDK (aarch64-linux-android*) toolchain
+### Compile using Android NDK (aarch64-linux-android*) toolchain
+    1. Setup NDK toolchain either using below file or commands given below
+    ```
+    $ source /home/nqx/setup_android.source 
+    ```
+    
+    or 
+
     ```   
     export ANDROID_DIR=/home/nqx/Android/
     export ANDROID_STUDIO=$ANDROID_DIR/android-studio
@@ -21,7 +27,7 @@ There are two ways to run srsLTE on Android
     export PATH=$ANDROID_SDK/tools:$ANDROID_SDK/platform-tools:$ANDROID_STUDIO/bin:$ANDROID_NDK:$ANDROID_NDK/toolchains/llvm:$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
     ```
     
-    Commands to build srsLTE
+    2. Commands to build srsLTE
     ```
     $ cd tools.new 
     $ sh install_tools.sh android all 
@@ -37,8 +43,8 @@ There are two ways to run srsLTE on Android
     The android binaries are available in install.tar.gz
     
 
-2. Compile using Aarch64-gnu 
-* Install ARM cross compiler toolchain (aarch64-linux-gnu-*) toolchain 7.5.0
+### Compile using Aarch64-gnu 
+    Makesure to have ARM cross compiler toolchain (aarch64-linux-gnu-*) 7.5.0
     ```
     $ cd tools.new 
     $ sh install_tools.sh rootfs all 
@@ -52,6 +58,8 @@ There are two ways to run srsLTE on Android
     $ sh create_dist.sh 
     ```
     The rootfs binaries are available in install.tar.gz
+
+
     
 
 
