@@ -3,7 +3,23 @@ srsLTE on Android
 
 ## Build SRSLTE
 There are two ways to run srsLTE on Android
-### Compile using Android NDK (aarch64-linux-android*) toolchain
+
+### Compile using Aarch64-gnu  (Recommended)
+Makesure to have ARM cross compiler toolchain (aarch64-linux-gnu-*) 7.5.0
+    ```
+    $ cd tools.new 
+    $ sh install_tools.sh rootfs all 
+    $ cd .. 
+    $ mkdir build 
+    $ cd build 
+    $ sh ../build_sd.sh rootfs
+    $ make -j16 
+    $ make -j16 install
+    $ cd ..
+    $ sh create_dist.sh 
+    ```
+    
+### Compile using Android NDK (aarch64-linux-android*) toolchain (Alternative way)
 1. Setup NDK toolchain either using below file or commands given below
     ```
     $ source /home/nqx/setup_android.source 
@@ -43,22 +59,7 @@ There are two ways to run srsLTE on Android
     The android binaries are available in install.tar.gz
     
 
-### Compile using Aarch64-gnu 
-Makesure to have ARM cross compiler toolchain (aarch64-linux-gnu-*) 7.5.0
 
-    ```
-    $ cd tools.new 
-    $ sh install_tools.sh rootfs all 
-    $ cd .. 
-    $ mkdir build 
-    $ cd build 
-    $ sh ../build_sd.sh rootfs
-    $ make -j16 
-    $ make -j16 install
-    $ cd ..
-    $ sh create_dist.sh 
-    ```
-    
 The rootfs binaries are available in install.tar.gz
 
 ## Setup 
