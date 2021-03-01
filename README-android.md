@@ -20,6 +20,9 @@ There are two ways to run srsLTE on Android
     export PATH=$JAVA_HOME/bin:$PATH
     export PATH=$ANDROID_SDK/tools:$ANDROID_SDK/platform-tools:$ANDROID_STUDIO/bin:$ANDROID_NDK:$ANDROID_NDK/toolchains/llvm:$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
     ```
+    
+    Commands to build srsLTE
+    ```
     $ cd tools.new 
     $ sh install_tools.sh android all 
     $ cd .. 
