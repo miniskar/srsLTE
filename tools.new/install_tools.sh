@@ -76,9 +76,9 @@ cmake_build() {
 automake_build() {
     export CFLAGS="-fPIC ${EXTCFLAGS}"
     if [ "x$static_build" = "x0" ]; then
-        ../configure --prefix=$PWD/../install --host=$TARGET  --disable-static --enable-shared $@ 
+        ../configure --prefix=$PWD/../install --host=$TARGET  --disable-static --enable-debug --enable-shared $@ 
     else
-        ../configure --prefix=$PWD/../install --host=$TARGET  --enable-static  --disable-shared $@ 
+        ../configure --prefix=$PWD/../install --host=$TARGET  --enable-static  --enable-debug --disable-shared $@ 
     fi
 }
 if [ "$target_system" = "android" ]; then
@@ -117,7 +117,7 @@ if [ "x$install_boost" = "x1" ]; then
     fi
     if [ "$target_system" = "android" ]; then 
         if [ "x$nodownload" = "x0" ]; then
-            git clone https://github.com/dec1/Boost-for-Android.git boost_for_androida
+            git clone https://github.com/dec1/Boost-for-Android.git boost_for_android
         fi
         cd boost_for_android  
         export BOOST_DIR=$(pwd)/../boost_1_69_0
@@ -129,7 +129,7 @@ if [ "x$install_boost" = "x1" ]; then
         cd boost_1_69_0
         echo "using gcc : arm : aarch64-linux-gnu-g++ ;" > user_config.jam
         ./bootstrap.sh --prefix=$PWD/install
-        ./b2 install toolset=gcc-arm link=static cxxflags=-fPIC --with-test --with-log --with-program_options -j32 --user-config=user_config.jam
+        ./b2 install toolset=gcc-arm link=static debug-symbols=on cxxflags=-fPIC --with-test --with-log --with-program_options -j32 --user-config=user_config.jam
         cd ..
     fi
 fi
@@ -142,9 +142,9 @@ if [ "x$install_iris" = "x1" ]; then
     mkdir -p build 
     cd build 
     if [ "$target_system" = "android" ]; then 
-    cmake_build 
+    cmake_build -DCMAKE_C_FLAGS='-g' -DCMAKE_CXX_FLAGS='-g' 
     else
-    cmake_build 
+    cmake_build -DCMAKE_C_FLAGS='-g' -DCMAKE_CXX_FLAGS='-g' 
     fi
     make -j16 
     make -j16 install 
@@ -161,9 +161,9 @@ if [ "x$install_fftw3" = "x1" ]; then
     mkdir -p build 
     cd build 
     if [ "$target_system" = "android" ]; then 
-    cmake_build -DENABLE_LONG_DOUBLE=OFF -DENABLE_FLOAT=ON -DENABLE_QUAD_PRECISION=OFF 
+    cmake_build -DCMAKE_C_FLAGS='-g' -DCMAKE_CXX_FLAGS='-g' -DENABLE_LONG_DOUBLE=OFF -DENABLE_FLOAT=ON -DENABLE_QUAD_PRECISION=OFF 
     else
-    cmake_build -DCMAKE_EXE_LINKER_FLAGS='-lm' -DENABLE_LONG_DOUBLE=OFF -DENABLE_FLOAT=ON -DENABLE_QUAD_PRECISION=OFF -DBUILD_TESTS=OFF
+    cmake_build -DCMAKE_C_FLAGS='-g' -DCMAKE_CXX_FLAGS='-g' -DCMAKE_EXE_LINKER_FLAGS='-lm' -DENABLE_LONG_DOUBLE=OFF -DENABLE_FLOAT=ON -DENABLE_QUAD_PRECISION=OFF -DBUILD_TESTS=OFF
     fi
     make -j16 
     make -j16 install 
@@ -207,9 +207,9 @@ if [ "x$install_mbedtls" = "x1" ]; then
         comp_flag="-DUSE_STATIC_MBEDTLS_LIBRARY=TRUE"
     fi
     if [ "$target_system" = "android" ]; then 
-    cmake_build -DCMAKE_C_FLAGS='-D__socklen_t_defined=1' ${comp_flag}
+    cmake_build -DCMAKE_C_FLAGS='-g -D__socklen_t_defined=1' ${comp_flag}
     else
-    cmake_build -DCMAKE_C_FLAGS='-Wno-type-limits' ${comp_flag}
+    cmake_build -DCMAKE_C_FLAGS='-g -Wno-type-limits' ${comp_flag}
     fi
     make -j16 install
     cd ..
@@ -223,7 +223,7 @@ if [ "x$install_libzmq" = "x1" ]; then
     cd libzmq
     mkdir -p build 
     cd build 
-    cmake_build
+    cmake_build -DCMAKE_C_FLAGS='-g' -DCMAKE_CXX_FLAGS='-g' 
     make -j16 install
     cd ..
     cd ..
@@ -236,7 +236,7 @@ if [ "x$install_libconfig" = "x1" ]; then
     cd libconfig
     mkdir -p build 
     cd build 
-    cmake_build
+    cmake_build -DCMAKE_C_FLAGS='-g' -DCMAKE_CXX_FLAGS='-g' 
     make -j16 install
     cd ..
     cd ..
