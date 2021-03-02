@@ -101,7 +101,7 @@ EPC executable (srsepc) requires special permissions to access /dev/net/tun. Eit
 2. Run
     ```
     # You need access permissions for /dev/net/tun 
-	root@AmundsenSD:~/scratch/rootfs/install#  srsepc  .config/epc.conf 
+    root@AmundsenSD:~/scratch/rootfs/install#  srsepc  .config/epc.conf 
     ```
 ### Run srsLTE (ENB) on Amundsen
 1. Configuration: Edit (`.config/enb.conf`)
@@ -146,17 +146,16 @@ EPC executable (srsepc) requires special permissions to access /dev/net/tun. Eit
     $ ping 172.16.0.2  # From ENB
     ```
    
-7. Inject traffic (Similar steps for ENB and EPC)
+7. Inject traffic 
     ```
-    $ iperf3 -s   # Start iperf server (SRSUE) Optional: -i 0.2
-    $ iperf3 -c 172.16.0.2 -u -b 4M -t 3600  # From SRSENB
+    root@McmurdoSD:~/scratch/rootfs/install# iperf3 -s   # Start iperf server (SRSUE) Optional: -i 0.2
+    root@AmundsenSD:~/scratch/rootfs/install# iperf3 -c 172.16.0.2 -u -b 4M -t 3600  # From SRSENB
     ```
     
 8. Send messgae 
     ```
-    $ netcat -u -l -p 2000 -s 172.16.0.2 # Listen on SRSUE
-    $ echo "Hello" | netcat -u 172.16.0.1 20000 # Send message from SRSENB
-    $ echo "Hello" | netcat 172.16.0.1 20000
+    root@McmurdoSD:~/scratch/rootfs/install#  netcat -u -l -p 2000 -s 172.16.0.2 # Listen on SRSUE
+    root@AmundsenSD:~/scratch/rootfs/install# echo "Hello" | netcat -u 172.16.0.1 20000 # Send message from SRSENB
     ```
 
 
