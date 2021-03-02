@@ -73,7 +73,7 @@ The rootfs binaries are available in install.tar.gz
     $ adb shell
     ```
     
-### Environment set and extract. (Same steps for both qualcomm boards)
+### Environment set and extract (Same steps for both qualcomm boards)
     ```
     $ setenforce 0
     $ ip rule add from all lookup default
@@ -85,7 +85,7 @@ The rootfs binaries are available in install.tar.gz
     root@localhost:~/scratch/rootfs# tar -xvzf install.tar.gz 
     ```
     
-### Setup the environment
+### Setup the environment (Same steps for both qualcomm boards)
     ```
     root@localhost:~/scratch/rootfs# cd install
     root@localhost:~/scratch/rootfs/install# source ./setup.source
@@ -101,7 +101,7 @@ EPC executable (srsepc) requires special permissions to access /dev/net/tun. Eit
 2. Run
     ```
     # You need access permissions for /dev/net/tun 
-	root@localhost:~/scratch/rootfs/install#  srsepc  .config/epc.conf 
+	root@AmundsenSD:~/scratch/rootfs/install#  srsepc  .config/epc.conf 
     ```
 ### Run srsLTE (ENB) on Amundsen
 1. Configuration: Edit (`.config/enb.conf`)
@@ -112,27 +112,27 @@ EPC executable (srsepc) requires special permissions to access /dev/net/tun. Eit
     ```
 2. Run
     ```
-    root@localhost:~/scratch/rootfs/install#  srsepc  .config/enb.conf
+    root@AmundsenSD:~/scratch/rootfs/install#  srsepc  .config/enb.conf
     ```
 ### Run srsLTE (UE) on Mcmurdo  
 1. Enter adb shell and rootfs image 
-2. Configuration: Edit (`<srslte-config-path>/ue.conf`)
+2. Configuration: Edit (`.config/ue.conf`)
     ```
     device_name = zmq
     device_args = tx_port=tcp://*:4001,rx_port=tcp://<wlan-ip-address-of-amundsen-board>:4000,id=ue,base_srate=23.04e6
     ```
 3. Run
     ```
-    root@localhost:~/scratch/rootfs/install#  srsue  .config/ue.conf
+    root@McmurdoSD:~/scratch/rootfs/install#  srsue  .config/ue.conf
     ```
-4. Run with Valgrind
+4. Run with Valgrind  (Similar steps for ENB and EPC)
     ```
     $ valgrind --tool=callgrind --dump-instr=yes --simulate-cache=yes --collect-jumps=yes srsue .config/ue.conf
     $ kcachegrind  calldump.xxxxx  # on ubuntu to see the profiling
     $ qcachegrind  calldump.xxxxx  # on mac to see the profiling
     ```
 
-5. Run with perf 
+5. Run with perf (Similar steps for ENB and EPC)
     ```
     $ sh -c " echo 0 > /proc/sys/kernel/kptr_restrict"
     $ perf record -g  srsue .config/ue.conf --log.all_level=info
@@ -140,13 +140,13 @@ EPC executable (srsepc) requires special permissions to access /dev/net/tun. Eit
     $ perf   report
     ```
     
-6. Test connections 
+6. Test connections (Similar steps for ENB and EPC)
     ```
     $ ping 172.16.0.1  # From UE
     $ ping 172.16.0.2  # From ENB
     ```
    
-7. Inject traffic 
+7. Inject traffic (Similar steps for ENB and EPC)
     ```
     $ iperf -s -i 0.2  # Start iperf server (SRSUE)
     $ iperf -c 172.16.0.2 -u -b 4M -t 3600.  # From SRSENB
