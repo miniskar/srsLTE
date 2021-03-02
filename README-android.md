@@ -148,8 +148,8 @@ EPC executable (srsepc) requires special permissions to access /dev/net/tun. Eit
    
 7. Inject traffic (Similar steps for ENB and EPC)
     ```
-    $ iperf -s -i 0.2  # Start iperf server (SRSUE)
-    $ iperf -c 172.16.0.2 -u -b 4M -t 3600.  # From SRSENB
+    $ iperf3 -s   # Start iperf server (SRSUE) Optional: -i 0.2
+    $ iperf3 -c 172.16.0.2 -u -b 4M -t 3600  # From SRSENB
     ```
     
 8. Send messgae 
@@ -158,6 +158,8 @@ EPC executable (srsepc) requires special permissions to access /dev/net/tun. Eit
     $ echo "Hello" | netcat -u 172.16.0.1 20000 # Send message from SRSENB
     $ echo "Hello" | netcat 172.16.0.1 20000
     ```
+
+
 
     
 
