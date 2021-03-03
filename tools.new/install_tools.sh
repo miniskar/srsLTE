@@ -7,7 +7,7 @@ install_lksctp=1
 install_mbedtls=1
 install_libzmq=1
 install_libconfig=1
-
+NPROC=`nproc`
 target_system="android"
 specific="all"
 if [ $# -ge 1 ]; then
@@ -144,7 +144,7 @@ if [ "x$install_boost" = "x1" ]; then
         cd boost_1_69_0
         echo "using gcc : arm : aarch64-linux-gnu-g++ ;" > user_config.jam
         ./bootstrap.sh --prefix=$PWD/install
-        ./b2 install toolset=gcc-arm link=static debug-symbols=on cxxflags=-fPIC --with-test --with-log --with-program_options -j32 --user-config=user_config.jam
+        ./b2 install toolset=gcc-arm link=static debug-symbols=on cxxflags=-fPIC --with-test --with-log --with-program_options -j${NPROC} --user-config=user_config.jam
         cd ..
     fi
 fi
@@ -161,8 +161,8 @@ if [ "x$install_iris" = "x1" ]; then
     else
     cmake_build -DCMAKE_C_FLAGS='-g' -DCMAKE_CXX_FLAGS='-g' 
     fi
-    make -j16 
-    make -j16 install 
+    make -j${NPROC}
+    make -j${NPROC} install 
     cd ..
     cd ..
 fi
@@ -180,8 +180,8 @@ if [ "x$install_fftw3" = "x1" ]; then
     else
     cmake_build -DCMAKE_C_FLAGS='-g' -DCMAKE_CXX_FLAGS='-g' -DCMAKE_EXE_LINKER_FLAGS='-lm' -DENABLE_LONG_DOUBLE=OFF -DENABLE_FLOAT=ON -DENABLE_QUAD_PRECISION=OFF -DBUILD_TESTS=OFF
     fi
-    make -j16 
-    make -j16 install 
+    make -j${NPROC} 
+    make -j${NPROC} install 
     cd ..
     cd ..
 fi
@@ -203,8 +203,8 @@ if [ "x$install_lksctp" = "x1" ]; then
     mkdir -p build
     cd build 
     automake_build 
-    make -j16 LDFLAGS="$SRSLD_FLAG"
-    make -j16 LDFLAGS="$SRSLD_FLAG" install-exec install-data
+    make -j${NPROC} LDFLAGS="$SRSLD_FLAG"
+    make -j${NPROC} LDFLAGS="$SRSLD_FLAG" install-exec install-data
     cd ..
     cd ..
 fi
@@ -228,7 +228,7 @@ if [ "x$install_mbedtls" = "x1" ]; then
     CMAKE_C_FLAGS='-g -Wno-type-limits'
     cmake_build  ${comp_flag}
     fi
-    make -j16 install
+    make -j${NPROC} install
     cd ..
     cd ..
 fi
@@ -241,7 +241,7 @@ if [ "x$install_libzmq" = "x1" ]; then
     mkdir -p build 
     cd build 
     cmake_build -DCMAKE_C_FLAGS='-g' -DCMAKE_CXX_FLAGS='-g' 
-    make -j16 install
+    make -j${NPROC} install
     cd ..
     cd ..
 fi
@@ -254,7 +254,7 @@ if [ "x$install_libconfig" = "x1" ]; then
     mkdir -p build 
     cd build 
     cmake_build -DCMAKE_C_FLAGS='-g' -DCMAKE_CXX_FLAGS='-g' 
-    make -j16 install
+    make -j${NPROC} install
     cd ..
     cd ..
 fi
