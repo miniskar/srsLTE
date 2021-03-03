@@ -8,6 +8,31 @@ LIBCONFIG=$SRSLTE_DIR/$TOOLS_DIR/libconfig/install
 IRIS=$SRSLTE_DIR/$TOOLS_DIR/iris/install
 FFTW3_DIR=${FFTW}
 export FFTW3_DIR=$FFTW
+
+export FFTW3_LIB=$FFTW/lib
+export SCTP_LIB=$SCTP/lib
+export MBEDTLS_LIB=$MBEDTLS/lib
+export ZEROMQ_LIB=$ZEROMQ/lib
+export LIBCONFIG_LIB=$LIBCONFIG/lib
+export IRIS_LIB=$IRIS/lib
+if [ ! -d $FFTW3_LIB ]; then
+export FFTW3_LIB=$FFTW/lib64
+fi
+if [ ! -d $SCTP_LIB ]; then
+export SCTP_LIB=$SCTP/lib64
+fi
+if [ ! -d $MBEDTLS_LIB ]; then
+export MBEDTLS_LIB=$MBEDTLS/lib64
+fi
+if [ ! -d $ZEROMQ_LIB ]; then
+export ZEROMQ_LIB=$ZEROMQ/lib64
+fi
+if [ ! -d $LIBCONFIG_LIB ]; then
+export LIBCONFIG_LIB=$LIBCONFIG/lib64
+fi
+if [ ! -d $IRIS_LIB]; then
+export IRIS_LIB=$IRIS/lib64
+fi
 target_system="android"
 if [ $# -ge 1 ]; then
     target_system=$1
@@ -93,7 +118,7 @@ else
 fi
 export SRSLTE_CFLAGS="${COMMON_FLAGS} "
 export SRSLTE_CXXFLAGS="${COMMON_FLAGS} "
-export SRSLTE_EXEFLAGS="-g -L${IRIS}/lib64 -L${MBEDTLS}/lib -L${SCTP}/lib -L${BOOST_LIB} -L${FFTW3_DIR}/lib -L${ZEROMQ}/lib -L${LIBCONFIG}/lib  "
+export SRSLTE_EXEFLAGS="-g -L${IRIS_LIB} -L${MBEDTLS_LIB} -L${SCTP_LIB} -L${BOOST_LIB} -L${FFTW3_LIB} -L${ZEROMQ_LIB} -L${LIBCONFIG_LIB}  "
 
 cmake_build() {
     cmake  \
@@ -112,30 +137,30 @@ cmake_build() {
       -DBoost_LIBRARY_DIRS=${BOOST_LIB} \
       -DBoost_LIBRARIES="boost_program_options" \
       -DLIBCONFIGPP_INCLUDE_DIR=$LIBCONFIG/include \
-      -DLIBCONFIGPP_LIBRARY=$LIBCONFIG/lib \
+      -DLIBCONFIGPP_LIBRARY=$LIBCONFIG_LIB \
       -DLIBCONFIG_INCLUDE_DIR=$LIBCONFIG/include \
       -DLIBCONFIG_LIBRARY=config \
-      -DLIBCONFIGPP_STATIC_LIBRARY=$LIBCONFIG/lib \
+      -DLIBCONFIGPP_STATIC_LIBRARY=$LIBCONFIG_LIB \
       -DLIBCONFIGPP_LIBRARIES="config++" \
       -DZEROMQ_FOUND=TRUE \
       -DZEROMQ_LIBRARIES=zmq \
       -DZEROMQ_INCLUDE_DIRS=$ZEROMQ/include \
-      -DZEROMQ_LIBRARY_DIRS=$ZEROMQ/lib \
-      -DFFTW3F_LIBRARY_DIRS=$FFTW3_DIR/lib \
-      -DFFTW3F_LIBRARY=$FFTW3_DIR/lib \
-      -DFFTW3F_LIBRARIES=$FFTW3_DIR/lib \
-      -DFFTW3F_STATIC_LIBRARY=$FFTW3_DIR/lib \
+      -DZEROMQ_LIBRARY_DIRS=$ZEROMQ_LIB \
+      -DFFTW3F_LIBRARY_DIRS=$FFTW3_LIB \
+      -DFFTW3F_LIBRARY=$FFTW3_LIB \
+      -DFFTW3F_LIBRARIES=$FFTW3_LIB \
+      -DFFTW3F_STATIC_LIBRARY=$FFTW3_LIB \
       -DFFTW3F_INCLUDE_DIR=$FFTW3_DIR/include \
       -DFFT_LIBRARIES=fftw3f \
-      -DSCTP_LIBRARIES=$SCTP/lib \
+      -DSCTP_LIBRARIES=$SCTP_LIB \
       -DSCTP_INCLUDE_DIRS=$SCTP/include \
-      -DSEC_LIBRARIES=$MBEDTLS/lib \
-      -DMBEDTLS_LIBRARIES=$MBEDTLS/lib \
+      -DSEC_LIBRARIES=$MBEDTLS_LIB \
+      -DMBEDTLS_LIBRARIES=$MBEDTLS_LIB \
       -DBUILD_STATIC=OFF \
       -DRPATH=ON \
       -DCMAKE_EXE_LINKER_FLAGS="$SRSLTE_EXEFLAGS" \
       -DMBEDTLS_INCLUDE_DIRS=$MBEDTLS/include  \
-      -DMBEDTLS_STATIC_LIBRARIES=$MBEDTLS/lib \
+      -DMBEDTLS_STATIC_LIBRARIES=$MBEDTLS_LIB \
       $@ ..
 }
 
