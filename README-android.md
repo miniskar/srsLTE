@@ -8,6 +8,7 @@ There are two ways to run srsLTE on Android
 Makesure to have ARM cross compiler toolchain (aarch64-linux-gnu-*) 7.5.0
 
     ```
+    $ source /home/nqx/setup_armtoolchain.source 
     $ cd tools.new 
     $ sh install_tools.sh rootfs all 
     $ cd .. 
