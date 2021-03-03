@@ -59,19 +59,29 @@ else
     fi
 fi
 cmake_build() {
+    EXTC_FLAGS=""
+    EXTCXX_FLAGS=""
+    if [[ ! -z "${CMAKE_C_FLAGS}" ]]; then
+        EXTC_FLAGS="${CMAKE_C_FLAGS} $EXTC_FLAGS"
+    fi
+    if [[ ! -z "${CMAKE_CXX_FLAGS}" ]]; then
+        EXTCXX_FLAGS="${CMAKE_CXX_FLAGS} $EXTCXX_FLAGS"
+    fi
     if [ "$target_system" = "android" ]; then
         if [ "x$static_build" = "x0" ]; then
-            cmake -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake -DANDROID_PLATFORM=28 -DANDROID_ABI=arm64-v8a -DANDROID_ARM_NEON=ON -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC=OFF -DBUILD_SHARED=ON .. $@
+            ${VCMAKE} -DCMAKE_C_FLAGS="${EXTC_FLAGS}" -DCMAKE_CXX_FLAGS="${EXTCXX_FLAGS}" -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake -DANDROID_PLATFORM=28 -DANDROID_ABI=arm64-v8a -DANDROID_ARM_NEON=ON -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC=OFF -DBUILD_SHARED=ON .. $@
         else
-            cmake -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake -DANDROID_PLATFORM=28 -DANDROID_ABI=arm64-v8a -DANDROID_ARM_NEON=ON -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC=ON -DBUILD_SHARED=OFF .. $@
+            ${VCMAKE} -DCMAKE_C_FLAGS="${EXTC_FLAGS}" -DCMAKE_CXX_FLAGS="${EXTCXX_FLAGS}" -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake -DANDROID_PLATFORM=28 -DANDROID_ABI=arm64-v8a -DANDROID_ARM_NEON=ON -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC=ON -DBUILD_SHARED=OFF .. $@
         fi
     else
         if [ "x$static_build" = "x0" ]; then
-            cmake -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC=OFF -DBUILD_SHARED=ON .. $@
+            ${VCMAKE} -DCMAKE_C_FLAGS="${EXTC_FLAGS}" -DCMAKE_CXX_FLAGS="${EXTCXX_FLAGS}" -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC=OFF -DBUILD_SHARED=ON .. $@
         else
-            cmake -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC=ON -DBUILD_SHARED=OFF .. $@
+            ${VCMAKE} -DCMAKE_C_FLAGS="${EXTC_FLAGS}" -DCMAKE_CXX_FLAGS="${EXTCXX_FLAGS}" -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC=ON -DBUILD_SHARED=OFF .. $@
         fi
     fi
+    unset CMAKE_C_FLAGS
+    unset CMAKE_CXX_FLAGS
 }
 automake_build() {
     export CFLAGS="-fPIC ${EXTCFLAGS}"
@@ -97,7 +107,7 @@ export RANLIB=$TOOLCHAIN/bin/$TARGET-ranlib
 export STRIP=$TOOLCHAIN/bin/$TARGET-strip
 else
 if [ "$target_system" = "clean" ]; then
-rm -rf *.tar.gz boost* fft* mbedtls libconfig libzmq
+rm -rf *.tar.gz boost* iris fft* mbedtls libconfig libzmq lksctp-tools
 exit
 else
 export TARGET=aarch64-linux-gnu
@@ -108,6 +118,11 @@ export AR=$TARGET-ar
 export RANLIB=$TARGET-ranlib
 export STRIP=$TARGET-strip
 fi
+fi
+
+VCMAKE="cmake11"
+if [[ ! -z "${CMAKE}" ]]; then
+    VCMAKE=${CMAKE}
 fi
 
 if [ "x$install_boost" = "x1" ]; then
@@ -207,9 +222,11 @@ if [ "x$install_mbedtls" = "x1" ]; then
         comp_flag="-DUSE_STATIC_MBEDTLS_LIBRARY=TRUE"
     fi
     if [ "$target_system" = "android" ]; then 
-    cmake_build -DCMAKE_C_FLAGS='-g -D__socklen_t_defined=1' ${comp_flag}
+    CMAKE_C_FLAGS='-g -D__socklen_t_defined=1'
+    cmake_build  ${comp_flag}
     else
-    cmake_build -DCMAKE_C_FLAGS='-g -Wno-type-limits' ${comp_flag}
+    CMAKE_C_FLAGS='-g -Wno-type-limits'
+    cmake_build  ${comp_flag}
     fi
     make -j16 install
     cd ..
