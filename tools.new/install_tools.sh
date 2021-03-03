@@ -120,7 +120,7 @@ export STRIP=$TARGET-strip
 fi
 fi
 
-VCMAKE="cmake11"
+VCMAKE="cmake"
 if [[ ! -z "${CMAKE}" ]]; then
     VCMAKE=${CMAKE}
 fi
