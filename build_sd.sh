@@ -60,23 +60,6 @@ append_libs_to_cmake()
 }
 set -x 
 sed -i -e "s/^# Options/set(CMAKE_SYSTEM_PROCESSOR 'aarch64')/g" -e "s/^find_package(Boost/#find_package(Boost/g" -e "s/\<c99\>/c11/g" ${SRSLTE_DIR}/CMakeLists.txt 
-sed  -i -e "s/target_link_libraries(\([^)]*\))/target_link_libraries(\1 boost_program_options fftw3f mbedtls mbedcrypto mbedx509 sctp config config++ zmq)/g" ${SRSLTE_DIR}/lib/src/phy/ch_estimation/test/CMakeLists.txt
-sed  -i -e "s/target_link_libraries(\([^)]*\))/target_link_libraries(\1 boost_program_options fftw3f mbedtls mbedcrypto mbedx509 sctp config config++ zmq)/g" ${SRSLTE_DIR}/lib/src/phy/phch/test/CMakeLists.txt
-sed  -i -e "s/target_link_libraries(\([^)]*\))/target_link_libraries(\1 boost_program_options fftw3f mbedtls mbedcrypto mbedx509 sctp config config++ zmq)/g" ${SRSLTE_DIR}/lib/src/phy/sync/test/CMakeLists.txt
-sed  -i -e "s/target_link_libraries(\([^)]*\))/target_link_libraries(\1 boost_program_options fftw3f mbedtls mbedcrypto mbedx509 sctp config config++ zmq)/g" ${SRSLTE_DIR}/lib/src/phy/channel/test/CMakeLists.txt
-sed  -i -e "s/target_link_libraries(\([^)]*\))/target_link_libraries(\1 boost_program_options fftw3f mbedtls mbedcrypto mbedx509 sctp config config++ zmq)/g" ${SRSLTE_DIR}/lib/src/phy/ue/test/CMakeLists.txt
-sed  -i -e "s/target_link_libraries(\([^)]*\))/target_link_libraries(\1 boost_program_options fftw3f mbedtls mbedcrypto mbedx509 sctp config config++ zmq)/g" ${SRSLTE_DIR}/lib/src/phy/dft/test/CMakeLists.txt
-sed  -i -e "s/target_link_libraries(\([^)]*\))/target_link_libraries(\1 boost_program_options fftw3f mbedtls mbedcrypto mbedx509 sctp config config++ zmq)/g" ${SRSLTE_DIR}/lib/src/phy/resampling/test/CMakeLists.txt
-sed  -i -e "s/target_link_libraries(\([^)]*\))/target_link_libraries(\1 boost_program_options fftw3f mbedtls mbedcrypto mbedx509 sctp config config++ zmq)/g" ${SRSLTE_DIR}/lib/src/phy/utils/test/CMakeLists.txt
-sed  -i -e "s/target_link_libraries(\([^)]*\))/target_link_libraries(\1 boost_program_options fftw3f mbedtls mbedcrypto mbedx509 sctp config config++ zmq)/g" ${SRSLTE_DIR}/lib/src/radio/test/CMakeLists.txt
-sed  -i -e "s/target_link_libraries(\([^)]*\))/target_link_libraries(\1 boost_program_options fftw3f mbedtls mbedcrypto mbedx509 sctp config config++ zmq)/g" ${SRSLTE_DIR}/lib/examples/CMakeLists.txt
-sed  -i -e "s/target_link_libraries(\([^)]*\))/target_link_libraries(\1 boost_program_options fftw3f mbedtls mbedcrypto mbedx509 sctp config config++ zmq)/g" ${SRSLTE_DIR}/lib/test/common/CMakeLists.txt
-sed  -i -e "s/target_link_libraries(\([^)]*\))/target_link_libraries(\1 boost_program_options fftw3f mbedtls mbedcrypto mbedx509 sctp config config++ zmq)/g" ${SRSLTE_DIR}/lib/test/phy/CMakeLists.txt
-sed  -i -e "s/target_link_libraries(\([^)]*\))/target_link_libraries(\1 boost_program_options fftw3f mbedtls mbedcrypto mbedx509 sctp config config++ zmq)/g" ${SRSLTE_DIR}/lib/test/srslog/CMakeLists.txt
-sed  -i -e "s/target_link_libraries(\([^)]*\))/target_link_libraries(\1 boost_program_options fftw3f mbedtls mbedcrypto mbedx509 sctp config config++ zmq)/g" ${SRSLTE_DIR}/lib/test/upper/CMakeLists.txt
-sed  -i -e "s/target_link_libraries(\([^)]*\))/target_link_libraries(\1 boost_program_options fftw3f mbedtls mbedcrypto mbedx509 sctp config config++ zmq)/g" ${SRSLTE_DIR}/srsue/test/upper/CMakeLists.txt
-sed  -i -e "s/target_link_libraries(\([^)]*\))/target_link_libraries(\1 boost_program_options fftw3f mbedtls mbedcrypto mbedx509 sctp config config++ zmq)/g" ${SRSLTE_DIR}/srsenb/test/upper/CMakeLists.txt
-sed  -i -e "s/target_link_libraries(\([^)]*\))/target_link_libraries(\1 boost_program_options fftw3f mbedtls mbedcrypto mbedx509 sctp config config++ zmq)/g" ${SRSLTE_DIR}/srsenb/test/mac/CMakeLists.txt   
 sed  -i -e "s/\${SEC_LIBRARIES})/$\{SEC_LIBRARIES} mbedtls mbedcrypto fftw3f zmq sctp config config++ mbedx509)/g" ${SRSLTE_DIR}/lib/src/common/CMakeLists.txt
 sed  -i -e "s/\${FFT_LIBRARIES})/$\{FFT_LIBRARIES} mbedtls mbedcrypto fftw3f zmq sctp config config++ mbedx509)/g" ${SRSLTE_DIR}/lib/src/phy/CMakeLists.txt
 append_libs_to_cmake ${SRSLTE_DIR}/srsue/src/CMakeLists.txt     
