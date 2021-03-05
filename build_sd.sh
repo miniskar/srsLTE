@@ -62,10 +62,6 @@ set -x
 sed -i -e "s/^# Options/set(CMAKE_SYSTEM_PROCESSOR 'aarch64')/g" -e "s/^find_package(Boost/#find_package(Boost/g" -e "s/\<c99\>/c11/g" ${SRSLTE_DIR}/CMakeLists.txt 
 sed  -i -e "s/\${SEC_LIBRARIES})/$\{SEC_LIBRARIES} mbedtls mbedcrypto fftw3f zmq sctp config config++ mbedx509)/g" ${SRSLTE_DIR}/lib/src/common/CMakeLists.txt
 sed  -i -e "s/\${FFT_LIBRARIES})/$\{FFT_LIBRARIES} mbedtls mbedcrypto fftw3f zmq sctp config config++ mbedx509)/g" ${SRSLTE_DIR}/lib/src/phy/CMakeLists.txt
-append_libs_to_cmake ${SRSLTE_DIR}/srsue/src/CMakeLists.txt     
-append_libs_to_cmake ${SRSLTE_DIR}/srsepc/src/CMakeLists.txt    
-append_libs_to_cmake ${SRSLTE_DIR}/srsenb/src/CMakeLists.txt    
-append_libs_to_cmake ${SRSLTE_DIR}/srsue/test/phy/CMakeLists.txt
 sed  -i -e "s/\<SHARED\>/STATIC/g" ${SRSLTE_DIR}/lib/src/phy/rf/CMakeLists.txt
 if [ "$target_system" = "android" ]; then
     sed -i -e "s/struct timespec now = {}/struct timeval now/g" -e "s/timespec_get/gettimeofday/g" -e "s/TIME_UTC/NULL/g"  ${SRSLTE_DIR}/lib/src/phy/utils/ringbuffer.c
@@ -92,15 +88,6 @@ if [ "$target_system" = "android" ]; then
     export BOOST_LIB=${BOOST}/libs/arm64-v8a
     export COMMON_FLAGS="${COMMON_FLAGS} -include ${SRSLTE_DIR}/tools.new/defines.h -I${SRSLTE_DIR}/tools.new -Dtimespec_get=gettimeofday -DTIME_UTC=NULL"
 else
-    append_to_test_cmake ${SRSLTE_DIR}/lib/test/common/CMakeLists.txt
-    append_to_test_cmake ${SRSLTE_DIR}/lib/test/phy/CMakeLists.txt
-    append_to_test_cmake ${SRSLTE_DIR}/lib/test/srslog/CMakeLists.txt
-    append_to_test_cmake ${SRSLTE_DIR}/lib/test/upper/CMakeLists.txt
-    append_to_test_cmake ${SRSLTE_DIR}/srsue/test/phy/CMakeLists.txt
-    append_to_test_cmake ${SRSLTE_DIR}/srsue/test/upper/CMakeLists.txt
-    append_to_test_cmake ${SRSLTE_DIR}/srsenb/test/upper/CMakeLists.txt
-    append_to_test_cmake ${SRSLTE_DIR}/srsenb/test/mac/CMakeLists.txt
-    append_to_test_cmake ${SRSLTE_DIR}/srsenb/test/phy/CMakeLists.txt
     export BOOST_LIB=${BOOST}/lib
     export COMMON_FLAGS="${COMMON_FLAGS}"
     #sed  -i -e "s/add_subdirectory(test)/#add_subdirectory(test)/g" ${SRSLTE_DIR}/srsue/CMakeLists.txt
