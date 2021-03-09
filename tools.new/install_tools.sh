@@ -61,10 +61,10 @@ fi
 cmake_build() {
     EXTC_FLAGS=""
     EXTCXX_FLAGS=""
-    if [[ ! -z "${CMAKE_C_FLAGS}" ]]; then
+    if [ ! -z ${CMAKE_C_FLAGS} ]; then
         EXTC_FLAGS="${CMAKE_C_FLAGS} $EXTC_FLAGS"
     fi
-    if [[ ! -z "${CMAKE_CXX_FLAGS}" ]]; then
+    if [ ! -z "${CMAKE_CXX_FLAGS}" ]; then
         EXTCXX_FLAGS="${CMAKE_CXX_FLAGS} $EXTCXX_FLAGS"
     fi
     if [ "$target_system" = "android" ]; then
@@ -121,7 +121,7 @@ fi
 fi
 
 VCMAKE="cmake"
-if [[ ! -z "${CMAKE}" ]]; then
+if [ ! -z "${CMAKE}" ]; then
     VCMAKE=${CMAKE}
 fi
 
@@ -156,6 +156,7 @@ if [ "x$install_iris" = "x1" ]; then
     cd iris
     mkdir -p build 
     cd build 
+    CMAKE_C_FLAGS='-g '
     if [ "$target_system" = "android" ]; then 
     cmake_build -DCMAKE_C_FLAGS='-g' -DCMAKE_CXX_FLAGS='-g' 
     else
