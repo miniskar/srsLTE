@@ -1,0 +1,6 @@
+#include "AEEStdDef.idl"
+
+interface brisbanehxg {
+   void saxpy(rout sequence<float> Z, in float A, in sequence<float> X, in sequence<float> Y, in int32 off, in int32 gws);
+};
+

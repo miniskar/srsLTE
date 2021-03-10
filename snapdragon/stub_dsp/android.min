@@ -1,0 +1,30 @@
+ifeq ($(CDSP_FLAG), 1) 
+	LIB_DSPRPC = libcdsprpc
+	DEFINES += CDSP
+else ifeq ($(MDSP_FLAG), 1) 
+	LIB_DSPRPC = libmdsprpc
+	DEFINES += MDSP
+else ifeq ($(SLPI_FLAG), 1) 
+	LIB_DSPRPC = libsdsprpc
+	DEFINES += SLPI
+else
+	LIB_DSPRPC = libadsprpc
+	DEFINES += ADSP
+endif
+
+INCDIRS += $(IRIS)/include
+$(info ************  LIB=$(LIB_DSPRPC) ************) 
+
+# stub library
+BUILD_DLLS += libbrisbanehxg
+libbrisbanehxg_QAICIDLS += brisbanehxg
+libbrisbanehxg_C_SRCS += $V/brisbanehxg_stub
+libbrisbanehxg_DLLS += $(LIB_DSPRPC)
+
+
+# copy final build products to the ship directory
+BUILD_COPIES = \
+   $(DLLS) \
+   $(EXES) \
+   $(LIBS) \
+   $(SHIP_DIR)/ ;
