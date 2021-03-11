@@ -30,7 +30,7 @@ fi
 if [ ! -d $LIBCONFIG_LIB ]; then
 export LIBCONFIG_LIB=$LIBCONFIG/lib64
 fi
-if [ ! -d $IRIS_LIB]; then
+if [ ! -d $IRIS_LIB ]; then
 export IRIS_LIB=$IRIS/lib64
 fi
 target_system="android"
@@ -42,15 +42,15 @@ BOOST=$SRSLTE_DIR/$TOOLS_DIR/boost_for_android/build/install
 else
 BOOST=$SRSLTE_DIR/$TOOLS_DIR/boost_1_69_0/install
 fi
-export COMMON_FLAGS="-g -fPIC -I${FFTW3_DIR}/include -I${ZEROMQ}/include -I${BOOST}/include -I${SCTP}/include -I${LIBCONFIG}/include"
+export COMMON_FLAGS="-g -fPIC -I${IRIS}/include -I${FFTW3_DIR}/include -I${ZEROMQ}/include -I${BOOST}/include -I${SCTP}/include -I${LIBCONFIG}/include"
 
 append_to_test_cmake() 
 {
     f=$1
     echo "" >> $f
-    echo 'set(CMAKE_C_LINK_EXECUTABLE "${CMAKE_C_COMPILER} <CMAKE_C_LINK_FLAGS>  <FLAGS> <LINK_FLAGS> <OBJECTS> <LINK_LIBRARIES>  -lfftw3f -lmbedtls -lmbedcrypto -lmbedx509 -lsctp -lconfig -lzmq -o <TARGET>")' >> $f
+    echo 'set(CMAKE_C_LINK_EXECUTABLE "${CMAKE_C_COMPILER} <CMAKE_C_LINK_FLAGS>  <FLAGS> <LINK_FLAGS> <OBJECTS> <LINK_LIBRARIES>  -lfftw3f -lmbedtls -lmbedcrypto -lmbedx509 -lsctp -lconfig -lzmq -lbrisbane -o <TARGET>")' >> $f
     echo "" >> $f
-    echo 'set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_COMPILER} <CMAKE_CXX_LINK_FLAGS> <FLAGS> <LINK_FLAGS>  <OBJECTS> <LINK_LIBRARIES>  -lfftw3f -lmbedtls -lmbedcrypto -lmbedx509 -lsctp -lconfig -lconfig++ -lzmq -o <TARGET>")' >> $f
+    echo 'set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_COMPILER} <CMAKE_CXX_LINK_FLAGS> <FLAGS> <LINK_FLAGS>  <OBJECTS> <LINK_LIBRARIES>  -lfftw3f -lmbedtls -lmbedcrypto -lmbedx509 -lsctp -lconfig -lconfig++ -lzmq -lbrisbane -o <TARGET>")' >> $f
     echo "" >> $f
 }
 append_libs_to_cmake()
