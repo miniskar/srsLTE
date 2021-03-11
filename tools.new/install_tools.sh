@@ -59,8 +59,8 @@ else
     fi
 fi
 cmake_build() {
-    EXTC_FLAGS=""
-    EXTCXX_FLAGS=""
+    EXTC_FLAGS="-fPIC -g "
+    EXTCXX_FLAGS="-fPIC -g "
     if [ ! -z ${CMAKE_C_FLAGS} ]; then
         EXTC_FLAGS="${CMAKE_C_FLAGS} $EXTC_FLAGS"
     fi
@@ -156,11 +156,10 @@ if [ "x$install_iris" = "x1" ]; then
     cd iris
     mkdir -p build 
     cd build 
-    CMAKE_C_FLAGS='-g '
     if [ "$target_system" = "android" ]; then 
-    cmake_build -DCMAKE_C_FLAGS='-g' -DCMAKE_CXX_FLAGS='-g' 
+    cmake_build -DBUILD_SHARED=ON -DBUILD_SHARED_LIBS=ON
     else
-    cmake_build -DCMAKE_C_FLAGS='-g' -DCMAKE_CXX_FLAGS='-g' 
+    cmake_build -DBUILD_SHARED=ON -DBUILD_SHARED_LIBS=ON
     fi
     make -j${NPROC}
     make -j${NPROC} install 
