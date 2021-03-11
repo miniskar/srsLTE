@@ -1,5 +1,9 @@
 INCDIRS += $(IRIS)/include
 
+C_FLAGS += $(MHVX_DOUBLE_FLAG) $(AUTOVEC_FLAG)
+CPP_FLAGS += $(MHVX_DOUBLE_FLAG) $(AUTOVEC_FLAG)
+ASM_FLAGS += $(MHVX_DOUBLE_FLAG)
+
 # This builds the skel library
 BUILD_LIBS += libbrisbanehxg_skel
 

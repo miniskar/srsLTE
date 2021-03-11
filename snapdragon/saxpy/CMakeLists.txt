@@ -94,9 +94,7 @@ else()
 target_link_libraries(kernel.hexagon ${HEXAGON_RPC})
 endif()
 install(TARGETS kernel.openmp DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
-install(TARGETS kernel.openmp DESTINATION ${PROJECT_SOURCE_DIR}/ship)
 install(TARGETS kernel.hexagon DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
-install(TARGETS kernel.hexagon DESTINATION ${PROJECT_SOURCE_DIR}/ship)
 
 add_custom_command(
   OUTPUT ${IRISHXG}
@@ -113,13 +111,12 @@ add_custom_command(
   )
 #printf "0x%x\n" `adb shell cat /sys/devices/soc0/serial_number` > serial
 install(FILES ${PROJECT_BINARY_DIR}/setup.source DESTINATION ${CMAKE_INSTALL_PREFIX}/)
-install(FILES ${PROJECT_BINARY_DIR}/setup.source DESTINATION ${PROJECT_SOURCE_DIR}/ship)
 install(FILES ${PROJECT_BINARY_DIR}/output/testsig-0x15bd6ed.so DESTINATION ${CMAKE_INSTALL_PREFIX}/)
-install(FILES ${PROJECT_BINARY_DIR}/output/testsig-0x15bd6ed.so DESTINATION ${PROJECT_SOURCE_DIR}/ship)
 install(FILES ${PROJECT_BINARY_DIR}/output/testsig-0x4061ec60.so DESTINATION ${CMAKE_INSTALL_PREFIX}/)
-install(FILES ${PROJECT_BINARY_DIR}/output/testsig-0x4061ec60.so DESTINATION ${PROJECT_SOURCE_DIR}/ship)
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/kernels/ DESTINATION ${CMAKE_INSTALL_PREFIX}/   FILES_MATCHING PATTERN "*.cl")
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/kernels/ DESTINATION ${PROJECT_SOURCE_DIR}/ship FILES_MATCHING PATTERN "*.cl")
+install(FILES ${HEXAGON_CORE_LIBDIR}/libbrisbanehxg_skel.so DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+install(FILES ${HEXAGON_STUB_LIBDIR}/libbrisbanehxg.so DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+install(FILES ${HEXAGON_STUB_LIBDIR}/lib${LIB_DSPRPC}.so DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
 if (APP_SOURCES)
 add_executable(${APP_EXECUTABLE} ${APP_SOURCES})
@@ -134,17 +131,10 @@ else()
 target_link_libraries(${APP_EXECUTABLE} brisbane dl pthread) 
 endif()
 #brisbanehxg ${LIB_DSPRPC} log)
-install(FILES ${HEXAGON_CORE_LIBDIR}/libbrisbanehxg_skel.so DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
-install(FILES ${HEXAGON_CORE_LIBDIR}/libbrisbanehxg_skel.so DESTINATION ${PROJECT_SOURCE_DIR}/ship)
-install(FILES ${HEXAGON_STUB_LIBDIR}/libbrisbanehxg.so DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
-install(FILES ${HEXAGON_STUB_LIBDIR}/libbrisbanehxg.so DESTINATION ${PROJECT_SOURCE_DIR}/ship)
-install(FILES ${HEXAGON_STUB_LIBDIR}/lib${LIB_DSPRPC}.so DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
-install(FILES ${HEXAGON_STUB_LIBDIR}/lib${LIB_DSPRPC}.so DESTINATION ${PROJECT_SOURCE_DIR}/ship)
 install(TARGETS ${APP_EXECUTABLE} DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
-install(TARGETS ${APP_EXECUTABLE} DESTINATION ${PROJECT_SOURCE_DIR}/ship)
-endif()
+endif() # APP_SOURCES
+
 install(FILES $ENV{IRIS}/lib64/libbrisbane.so DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
-install(FILES $ENV{IRIS}/lib64/libbrisbane.so DESTINATION ${PROJECT_SOURCE_DIR}/ship)
 
 #add_subdirectory(include)
 #add_subdirectory(src)

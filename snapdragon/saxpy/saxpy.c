@@ -3,6 +3,20 @@
 #include <stdlib.h>
 #include <malloc.h>
 
+#define GETENV_INT(VAR, ENV, DV)  \
+{  \
+    char *s = getenv(ENV); \
+    if (s == NULL) \
+        VAR = DV;  \
+    else \
+        VAR = atoi(s); \
+}
+int __target_device = 0;
+int get_target_device()
+{
+    return __target_device;
+}
+
 int main(int argc, char** argv) {
   brisbane_init(&argc, &argv, 1);
 
@@ -11,9 +25,10 @@ int main(int argc, char** argv) {
   int MUL;
   float *X, *Y, *Z;
   float A = 10;
-
+  GETENV_INT(__target_device, "ARCH", 2);
+  printf("ARCH configured:%d\n", __target_device);
   SIZE = argc > 1 ? atol(argv[1]) : 8;
-  TARGET = argc > 2 ? atol(argv[2]) : 0;
+  TARGET = argc > 2 ? atol(argv[2]) : get_target_device();
   MUL = argc > 3 ? atol(argv[3]) : 1;
   target_dev = TARGET == 0 ? brisbane_cpu : TARGET == 1 ? brisbane_gpu : brisbane_dsp;
 
