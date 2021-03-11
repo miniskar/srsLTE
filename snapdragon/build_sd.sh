@@ -1,1 +1,0 @@
-cmake -DCMAKE_TOOLCHAIN_FILE=/noback/nqx/Android//Sdk/ndk-bundle/build/cmake/android.toolchain.cmake -DANDROID_PLATFORM=28 -DANDROID_ABI=arm64-v8a -DANDROID_ARM_NEON=ON -DCMAKE_INSTALL_PREFIX=/noback/nqx/Qualcomm/SDR/srsLTE.android.new/snapdragon/build/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=ON  ..
