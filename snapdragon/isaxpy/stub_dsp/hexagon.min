@@ -1,0 +1,24 @@
+INCDIRS += $(IRIS)/include
+
+C_FLAGS += $(MHVX_DOUBLE_FLAG) $(AUTOVEC_FLAG)
+CPP_FLAGS += $(MHVX_DOUBLE_FLAG) $(AUTOVEC_FLAG)
+ASM_FLAGS += $(MHVX_DOUBLE_FLAG)
+
+# This builds the skel library
+BUILD_LIBS += libbrisbanehxg_skel
+
+# only build the shared object if dynamic option specified in the variant
+ifeq (1,$(V_dynamic))
+BUILD_DLLS = libbrisbanehxg_skel
+endif
+
+libbrisbanehxg_skel_QAICIDLS = brisbanehxg
+libbrisbanehxg_skel_C_SRCS += $V/brisbanehxg_skel
+libbrisbanehxg_skel.C_SRCS = brisbanehxg_imp.c
+
+# copy final build products to the ship directory
+BUILD_COPIES = \
+   $(DLLS) \
+   $(EXES) \
+   $(LIBS) \
+   $(SHIP_DIR)/ ;
