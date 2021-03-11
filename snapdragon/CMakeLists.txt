@@ -94,8 +94,8 @@ add_custom_command(
   OUTPUT setup.source
   COMMAND echo 'y' | python $ENV{HEXAGON_SDK_ROOT}/tools/elfsigner/elfsigner.py -zz -t 0x15bd6ed 
   COMMAND echo 'y' | python $ENV{HEXAGON_SDK_ROOT}/tools/elfsigner/elfsigner.py -zz -t 0x4061ec60
-  COMMAND echo "export PATH=\\$$PWD:\\$$PWD/bin:\\$$PATH" > setup.source 
-  COMMAND echo "export LD_LIBRARY_PATH=\\$$PWD:\\$$PWD/lib:\\$$LD_LIBRARY_PATH" >> setup.source 
+  COMMAND echo "export PATH=\\$$PWD:\\$$PWD/bin:/system/bin:\\$$PATH" > setup.source 
+  COMMAND echo "export LD_LIBRARY_PATH=.:\\$$PWD:\\$$PWD/lib:\\$$LD_LIBRARY_PATH" >> setup.source 
   )
 #printf "0x%x\n" `adb shell cat /sys/devices/soc0/serial_number` > serial
 install(FILES ${PROJECT_BINARY_DIR}/setup.source DESTINATION ${CMAKE_INSTALL_PREFIX}/)
@@ -104,6 +104,8 @@ install(FILES ${PROJECT_BINARY_DIR}/output/testsig-0x15bd6ed.so DESTINATION ${CM
 install(FILES ${PROJECT_BINARY_DIR}/output/testsig-0x15bd6ed.so DESTINATION ${PROJECT_SOURCE_DIR}/ship)
 install(FILES ${PROJECT_BINARY_DIR}/output/testsig-0x4061ec60.so DESTINATION ${CMAKE_INSTALL_PREFIX}/)
 install(FILES ${PROJECT_BINARY_DIR}/output/testsig-0x4061ec60.so DESTINATION ${PROJECT_SOURCE_DIR}/ship)
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/kernels DESTINATION ${CMAKE_INSTALL_PREFIX}/ FILES_MATCHING PATTERN "*.cl")
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/kernels DESTINATION ${PROJECT_SOURCE_DIR}/ship FILES_MATCHING PATTERN "*.cl")
 if (APP_SOURCES)
 add_executable(${APP_EXECUTABLE} ${APP_SOURCES})
 add_custom_target(irishxg DEPENDS ${IRISHXG})
@@ -111,7 +113,8 @@ add_custom_target(setup DEPENDS setup.source)
 add_dependencies(${APP_EXECUTABLE} irishxg setup)
 set_target_properties(${APP_EXECUTABLE} PROPERTIES COMPILE_FLAGS ${APP_FLAGS})
 set_target_properties(${APP_EXECUTABLE} PROPERTIES LINK_FLAGS ${APP_LDFLAGS})
-target_link_libraries(${APP_EXECUTABLE} brisbane brisbanehxg ${LIB_DSPRPC} log)
+target_link_libraries(${APP_EXECUTABLE} brisbane) 
+#brisbanehxg ${LIB_DSPRPC} log)
 install(FILES ${HEXAGON_CORE_LIBDIR}/libbrisbanehxg_skel.so DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 install(FILES ${HEXAGON_CORE_LIBDIR}/libbrisbanehxg_skel.so DESTINATION ${PROJECT_SOURCE_DIR}/ship)
 install(FILES ${HEXAGON_STUB_LIBDIR}/libbrisbanehxg.so DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
