@@ -50,6 +50,7 @@ Makesure to have ARM cross compiler toolchain (aarch64-linux-gnu-*) 7.5.0
 2. Commands to build srsLTE
     ```
     $ cd tools.new 
+    $ CMAKE=cmake3
     $ sh install_tools.sh android all 
     $ cd .. 
     $ mkdir build 
