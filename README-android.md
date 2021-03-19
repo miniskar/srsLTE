@@ -1,5 +1,6 @@
 srsLTE on Android
 =================
+Please run the build on pharoah machine.
 
 ## Build SRSLTE
 There are two ways to run srsLTE on Android
