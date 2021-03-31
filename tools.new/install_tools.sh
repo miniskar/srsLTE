@@ -61,7 +61,7 @@ fi
 cmake_build() {
     EXTC_FLAGS="-fPIC -g "
     EXTCXX_FLAGS="-fPIC -g "
-    if [ ! -z ${CMAKE_C_FLAGS} ]; then
+    if [ ! -z "${CMAKE_C_FLAGS}" ]; then
         EXTC_FLAGS="${CMAKE_C_FLAGS} $EXTC_FLAGS"
     fi
     if [ ! -z "${CMAKE_CXX_FLAGS}" ]; then
