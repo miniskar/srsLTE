@@ -17,6 +17,6 @@ if [ -d $SRSLTE_DIR/$TOOLS_DIR/$i/install/lib64 ]; then
     cp -rf $SRSLTE_DIR/$TOOLS_DIR/$i/install/lib64/* ${SRSLTE_DIR}/${INST_DIR}/lib64/. ;
 fi
 done
-sed -i -e "s/^SRSLTE_INSTALL_DIR.*$INST_DIR\//SRSLTE_INSTALL_DIR=\$PWD\//g" $INST_DIR/bin/srslte_install_configs.sh
+sed -i -e "s/^SRSLTE_INSTALL_DIR.*$INST_DIR\//SRSLTE_INSTALL_DIR=\"\$PWD\//g" $INST_DIR/bin/srslte_install_configs.sh
 tar -cvzf install.tar.gz install
 
