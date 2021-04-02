@@ -205,7 +205,8 @@ export BOOST_INC=${BOOST}/include
 #export BOOST_LIB=${BOOST}/${ANDROID_ABI}/lib
 #export BOOST_POSTFIX=-clang-mt-a64-${BOOST_VERSION}
 else
-export BOOST=$PWD/boost_${BOOST_VERSION}/install
+export BOOST_DIR=$PWD/boost_${BOOST_VERSION_TAG}
+export BOOST=$PWD/boost_${BOOST_VERSION_TAG}/install
 export BOOST_LIB=${BOOST}/lib
 export BOOST_INC=${BOOST}/include
 fi
@@ -218,37 +219,67 @@ if [ "x$install_uhd" = "x1" ]; then
     mkdir -p build 
     cd build
     CMAKE_CXX_FLAGS='-Wno-format-security'
-    CMAKE_EXE_LINKER_FLAGS="-L${BOOST_LIB} -lboost_atomic${BOOST_POSTFIX} -lboost_chrono${BOOST_POSTFIX} -lc++_shared " 
     BLIBS=""
-    for i in chrono date_time filesystem program_options regex system unit_test_framework serialization atomic thread; do 
-    BLIBS="${BLIBS} boost_${i}${BOOST_POSTFIX}";
-    done
+    sed -i -e "s/libuhd_libs})/libuhd_libs} ${BLIBS})/g" ../lib/CMakeLists.txt 
     sed -i -e "s/libuhd_libs} log)/libuhd_libs} log ${BLIBS})/g" ../lib/CMakeLists.txt 
-    sed -i -e "s/native/native_handle/g"  ../examples/network_relay.cpp
-    sed -i -e "s/native/native_handle/g"  ../lib/transport/udp_zero_copy.cpp
-    sed -i -e "s/native/native_handle/g"  ../lib/transport/udp_simple.cpp
-    sed -i -e "s/native/native_handle/g"  ../lib/transport/tcp_zero_copy.cpp
+    sed -i -e "s/\<native\>/native_handle/g"  ../examples/network_relay.cpp
+    sed -i -e "s/\<native\>/native_handle/g"  ../lib/transport/udp_zero_copy.cpp
+    sed -i -e "s/\<native\>/native_handle/g"  ../lib/transport/udp_simple.cpp
+    sed -i -e "s/\<native\>/native_handle/g"  ../lib/transport/tcp_zero_copy.cpp
     sed -i -e "s/Boost_FOUND;HAVE_PYTHON_PLAT_MIN_VERSION;HAVE_PYTHON_MODULE_MAKO//g" ../CMakeLists.txt
     sed -i -e "s/posix_time::seconds(setup/posix_time::seconds((unsigned long long)setup/g" ../examples/rx_samples_to_file.cpp
     sed -i -e "s/posix_time::milliseconds(delay/posix_time::milliseconds((unsigned long long)delay/g" ../examples/tx_samples_from_file.cpp
-    cmake_build -DBUILD_SHARED=ON -DBUILD_SHARED_LIBS=ON -DNEON_SIMD_ENABLE=ON \
-                       -DBoost_NO_BOOST_CMAKE=TRUE \
-                       -DBoost_NO_SYSTEM_PATHS=TRUE \
-                       -DANDROID=ON \
+    if [ "$target_system" = "android" ]; then 
+        for i in chrono date_time filesystem program_options regex system unit_test_framework serialization atomic thread; do 
+        BLIBS="${BLIBS} boost_${i}${BOOST_POSTFIX}";
+        done
+        CMAKE_EXE_LINKER_FLAGS="-L${BOOST_LIB} -lboost_atomic${BOOST_POSTFIX} -lboost_chrono${BOOST_POSTFIX} -lc++_shared " 
+        cmake_build -DBUILD_SHARED=ON -DBUILD_SHARED_LIBS=ON -DNEON_SIMD_ENABLE=ON \
+                   -DBoost_NO_BOOST_CMAKE=TRUE \
+                   -DBoost_NO_SYSTEM_PATHS=TRUE \
+                   -DANDROID=ON \
+                   -DBOOST_VERSION=$BOOST_POSTFIX \
+                   -DBoost_THREAD_LIBRARY_RELEASE:FILEPATH=${BOOST_LIB} \
+                   -DBoost_LIBRARY_DIRS:FILEPATH=${BOOST_LIB} \
+                   -DBoost_INCLUDE_DIR:FILEPATH=${BOOST_INC} \
+                   -DBoost_INCLUDE_DIRS:FILEPATH=${BOOST_INC} \
+                   -DLIBUSB_INCLUDE_DIRS=$LIBUSB/include/libusb-1.0 \
+                   -DLIBUSB_LIBRARIES="$LIBUSB/lib/libusb-1.0.a"\
+                   -DENABLE_STATIC_LIBS=False -DENABLE_USRP1=False \
+                   -DENABLE_USRP2=False -DENABLE_B100=False \
+                   -DENABLE_X300=False -DENABLE_OCTOCLOCK=False \
+                   -DENABLE_TESTS=False -DENABLE_ORC=False 
+    else
+        for i in chrono date_time filesystem program_options regex system unit_test_framework atomic thread; do 
+        BLIBS="${BLIBS} boost_${i}${BOOST_POSTFIX}";
+        done
+        CMAKE_EXE_LINKER_FLAGS="-L${BOOST_LIB} -lboost_atomic${BOOST_POSTFIX} -lboost_chrono${BOOST_POSTFIX} " 
+        cmake_build -DBUILD_SHARED=OFF -DBUILD_SHARED_LIBS=OFF -DNEON_SIMD_ENABLE=ON \
+                       -DBOOST_ROOT=$BOOST_DIR/install \
                        -DBOOST_VERSION=$BOOST_POSTFIX \
+                       -DENABLE_EXAMPLES=OFF \
+                       -DENABLE_UTILS=OFF \
+                       -DENABLE_TESTS=OFF \
                        -DBoost_THREAD_LIBRARY_RELEASE:FILEPATH=${BOOST_LIB} \
                        -DBoost_LIBRARY_DIRS:FILEPATH=${BOOST_LIB} \
                        -DBoost_INCLUDE_DIR:FILEPATH=${BOOST_INC} \
                        -DBoost_INCLUDE_DIRS:FILEPATH=${BOOST_INC} \
                        -DLIBUSB_INCLUDE_DIRS=$LIBUSB/include/libusb-1.0 \
                        -DLIBUSB_LIBRARIES="$LIBUSB/lib/libusb-1.0.a"\
-                       -DENABLE_STATIC_LIBS=False -DENABLE_USRP1=False \
+                       -DENABLE_STATIC_LIBS=True -DENABLE_USRP1=False \
                        -DENABLE_USRP2=False -DENABLE_B100=False \
                        -DENABLE_X300=False -DENABLE_OCTOCLOCK=False \
                        -DENABLE_TESTS=False -DENABLE_ORC=False 
+    fi                   
     make -j${NPROC}
     make -j${NPROC} install 
     cd ..
+    if [ -d $(pwd)/install/lib ]; then
+        rm -f $(pwd)/install/lib/libuhd.so*
+    fi
+    if [ -d $(pwd)/install/lib64 ]; then
+        rm -f $(pwd)/install/lib64/libuhd.so*
+    fi
     cd ../../
 fi
 

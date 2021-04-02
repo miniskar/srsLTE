@@ -78,7 +78,7 @@ append_libs_to_cmake()
 }
 set -x 
 if [ "$target_system" = "android" ]; then
-modules="mbedtls mbedcrypto fftw3f zmq sctp uhd config config++ mbedx509 log"
+modules="mbedtls mbedcrypto fftw3f zmq sctp uhd config config++ mbedx509 log  c++_shared"
 else
 modules="mbedtls mbedcrypto fftw3f zmq sctp uhd config config++ mbedx509"
 fi
@@ -142,7 +142,7 @@ cmake_build() {
       -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
       -DBoost_FOUND=ON \
       -DBoost_LIBRARY_DIRS=${BOOST_LIB} \
-      -DBoost_LIBRARIES="boost_program_options${BOOST_POSTFIX} -lc++_shared" \
+      -DBoost_LIBRARIES="boost_program_options${BOOST_POSTFIX}" \
       -DLIBCONFIGPP_INCLUDE_DIR=$LIBCONFIG/include \
       -DLIBCONFIGPP_LIBRARY=$LIBCONFIG_LIB \
       -DLIBCONFIG_INCLUDE_DIR=$LIBCONFIG/include \
