@@ -6,6 +6,7 @@ MBEDTLS=$SRSLTE_DIR/$TOOLS_DIR/mbedtls/install
 ZEROMQ=$SRSLTE_DIR/$TOOLS_DIR/libzmq/install
 LIBCONFIG=$SRSLTE_DIR/$TOOLS_DIR/libconfig/install
 IRIS=$SRSLTE_DIR/$TOOLS_DIR/iris/install
+UHD=$SRSLTE_DIR/$TOOLS_DIR/uhd/host/install
 FFTW3_DIR=${FFTW}
 export FFTW3_DIR=$FFTW
 
@@ -15,6 +16,7 @@ export MBEDTLS_LIB=$MBEDTLS/lib
 export ZEROMQ_LIB=$ZEROMQ/lib
 export LIBCONFIG_LIB=$LIBCONFIG/lib
 export IRIS_LIB=$IRIS/lib
+export UHD_LIB=$UHD/lib
 if [ ! -d $FFTW3_LIB ]; then
 export FFTW3_LIB=$FFTW/lib64
 fi
@@ -32,6 +34,9 @@ export LIBCONFIG_LIB=$LIBCONFIG/lib64
 fi
 if [ ! -d $IRIS_LIB ]; then
 export IRIS_LIB=$IRIS/lib64
+fi
+if [ ! -d $UHD_LIB ]; then
+export UHD_LIB=$UHD/lib64
 fi
 target_system="android"
 if [ $# -ge 1 ]; then
@@ -55,15 +60,15 @@ export BOOST_INC=${BOOST}/include
 export BOOST_LIB=${BOOST}/lib
 fi
 
-export COMMON_FLAGS="-g -fPIC -I${IRIS}/include -I${FFTW3_DIR}/include -I${ZEROMQ}/include -I${BOOST_INC} -I${SCTP}/include -I${LIBCONFIG}/include"
+export COMMON_FLAGS="-g -fPIC -I${UHD}/include -I${IRIS}/include -I${FFTW3_DIR}/include -I${ZEROMQ}/include -I${BOOST_INC} -I${SCTP}/include -I${LIBCONFIG}/include"
 
 append_to_test_cmake() 
 {
     f=$1
     echo "" >> $f
-    echo 'set(CMAKE_C_LINK_EXECUTABLE "${CMAKE_C_COMPILER} <CMAKE_C_LINK_FLAGS>  <FLAGS> <LINK_FLAGS> <OBJECTS> <LINK_LIBRARIES>  -lfftw3f -lmbedtls -lmbedcrypto -lmbedx509 -lsctp -lconfig -lzmq -lbrisbane -o <TARGET>")' >> $f
+    echo 'set(CMAKE_C_LINK_EXECUTABLE "${CMAKE_C_COMPILER} <CMAKE_C_LINK_FLAGS>  <FLAGS> <LINK_FLAGS> <OBJECTS> <LINK_LIBRARIES>  -lfftw3f -lmbedtls -lmbedcrypto -lmbedx509 -lsctp -lconfig -lzmq -luhd -lbrisbane -o <TARGET>")' >> $f
     echo "" >> $f
-    echo 'set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_COMPILER} <CMAKE_CXX_LINK_FLAGS> <FLAGS> <LINK_FLAGS>  <OBJECTS> <LINK_LIBRARIES>  -lfftw3f -lmbedtls -lmbedcrypto -lmbedx509 -lsctp -lconfig -lconfig++ -lzmq -lbrisbane -o <TARGET>")' >> $f
+    echo 'set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_COMPILER} <CMAKE_CXX_LINK_FLAGS> <FLAGS> <LINK_FLAGS>  <OBJECTS> <LINK_LIBRARIES>  -lfftw3f -lmbedtls -lmbedcrypto -lmbedx509 -lsctp -lconfig -lconfig++ -lzmq -luhd -lbrisbane -o <TARGET>")' >> $f
     echo "" >> $f
 }
 append_libs_to_cmake()
@@ -73,8 +78,8 @@ append_libs_to_cmake()
 }
 set -x 
 sed -i -e "s/^# Options/set(CMAKE_SYSTEM_PROCESSOR 'aarch64')/g" -e "s/^find_package(Boost/#find_package(Boost/g" -e "s/\<c99\>/c11/g" ${SRSLTE_DIR}/CMakeLists.txt 
-sed  -i -e "s/\${SEC_LIBRARIES})/$\{SEC_LIBRARIES} mbedtls mbedcrypto fftw3f zmq sctp config config++ mbedx509)/g" ${SRSLTE_DIR}/lib/src/common/CMakeLists.txt
-sed  -i -e "s/\${FFT_LIBRARIES})/$\{FFT_LIBRARIES} mbedtls mbedcrypto fftw3f zmq sctp config config++ mbedx509)/g" ${SRSLTE_DIR}/lib/src/phy/CMakeLists.txt
+sed  -i -e "s/\${SEC_LIBRARIES})/$\{SEC_LIBRARIES} mbedtls mbedcrypto fftw3f zmq sctp uhd config config++ mbedx509)/g" ${SRSLTE_DIR}/lib/src/common/CMakeLists.txt
+sed  -i -e "s/\${FFT_LIBRARIES})/$\{FFT_LIBRARIES} mbedtls mbedcrypto fftw3f zmq sctp uhd config config++ mbedx509)/g" ${SRSLTE_DIR}/lib/src/phy/CMakeLists.txt
 sed  -i -e "s/\<SHARED\>/STATIC/g" ${SRSLTE_DIR}/lib/src/phy/rf/CMakeLists.txt
 if [ "$target_system" = "android" ]; then
     sed -i -e "s/struct timespec now = {}/struct timeval now/g" -e "s/timespec_get/gettimeofday/g" -e "s/TIME_UTC/NULL/g"  ${SRSLTE_DIR}/lib/src/phy/utils/ringbuffer.c
@@ -107,7 +112,7 @@ else
 fi
 export SRSLTE_CFLAGS="${COMMON_FLAGS} "
 export SRSLTE_CXXFLAGS="${COMMON_FLAGS} "
-export SRSLTE_EXEFLAGS="-g -L${IRIS_LIB} -L${MBEDTLS_LIB} -L${SCTP_LIB} -L${BOOST_LIB} -L${FFTW3_LIB} -L${ZEROMQ_LIB} -L${LIBCONFIG_LIB}  "
+export SRSLTE_EXEFLAGS="-g -L${IRIS_LIB} -L${UHD_LIB} -L${MBEDTLS_LIB} -L${SCTP_LIB} -L${BOOST_LIB} -L${FFTW3_LIB} -L${ZEROMQ_LIB} -L${LIBCONFIG_LIB}  "
 
 VCMAKE="cmake"
 if [[ ! -z "${CMAKE}" ]]; then
@@ -119,6 +124,8 @@ cmake_build() {
       -DCMAKE_INSTALL_PREFIX=$PWD/../install \
       -DENABLE_SRSENB=ON \
       -DENABLE_UHD=ON \
+      -DUHD_INCLUDE_DIRS=${UHD}/include \
+      -DUHD_LIBRARY_DIRS=${UHD_LIB} \
       -DENABLE_SRSEPC=ON \
       -DENABLE_HARDSIM=OFF \
       -DENABLE_SOAPYSDR=OFF \
