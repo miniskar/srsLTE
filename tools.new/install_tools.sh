@@ -99,6 +99,7 @@ cmake_build() {
     fi
     unset CMAKE_C_FLAGS
     unset CMAKE_CXX_FLAGS
+    unset CMAKE_EXE_LINKER_FLAGS
 }
 automake_build() {
     export CFLAGS="-fPIC ${EXTCFLAGS}"
