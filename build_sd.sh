@@ -37,12 +37,25 @@ target_system="android"
 if [ $# -ge 1 ]; then
     target_system=$1
 fi 
+ANDROID_ABI=arm64-v8a
+BOOST_VERSION=1_69_0
+#BOOST_VERSION=1_70
+BOOST_POSTFIX=
 if [ "$target_system" = "android" ]; then
-BOOST=$SRSLTE_DIR/$TOOLS_DIR/boost_for_android/build/install
+export BOOST=$SRSLTE_DIR/$TOOLS_DIR/boost_for_android/build/install
+export BOOST_LIB=${BOOST}/libs/arm64-v8a
+export BOOST_INC=${BOOST}/include
+#export BOOST=$SRSLTE_DIR/$TOOLS_DIR/boost_for_android/install
+#export BOOST_INC=${BOOST}/${ANDROID_ABI}/include/boost-${BOOST_VERSION}
+#export BOOST_LIB=${BOOST}/${ANDROID_ABI}/lib
+#BOOST_POSTFIX=-clang-mt-a64-${BOOST_VERSION}
 else
-BOOST=$SRSLTE_DIR/$TOOLS_DIR/boost_1_69_0/install
+export BOOST=$SRSLTE_DIR/$TOOLS_DIR/boost_${BOOST_VERSION}/install
+export BOOST_INC=${BOOST}/include
+export BOOST_LIB=${BOOST}/lib
 fi
-export COMMON_FLAGS="-g -fPIC -I${IRIS}/include -I${FFTW3_DIR}/include -I${ZEROMQ}/include -I${BOOST}/include -I${SCTP}/include -I${LIBCONFIG}/include"
+
+export COMMON_FLAGS="-g -fPIC -I${IRIS}/include -I${FFTW3_DIR}/include -I${ZEROMQ}/include -I${BOOST_INC} -I${SCTP}/include -I${LIBCONFIG}/include"
 
 append_to_test_cmake() 
 {
@@ -85,10 +98,8 @@ if [ "$target_system" = "android" ]; then
     sed -i -e "s/ dur.count()/ (long)dur.count()/g" -e "s/ duration_cast<TUnit>(tmax).count()/ (long)duration_cast<TUnit>(tmax).count()/g" -e "s/ duration_cast<TUnit>(tmin).count()/ (long)duration_cast<TUnit>(tmin).count()/g" ${SRSLTE_DIR}/lib/src/common/time_prof.cc
     sed -i -e "s/__in6_u\.__u6_addr8/in6_u.u6_addr8/g" -e "s/linux\/udp\.h/netinet\/udp.h/g" ${SRSLTE_DIR}/srsue/src/stack/upper/tft_packet_filter.cc
     sed -i -e "s/std::chrono::duration_cast<std::chrono::milliseconds>(dur).count/(long)std::chrono::duration_cast<std::chrono::milliseconds>(dur).count/g" ${SRSLTE_DIR}/srsue/src/stack/ue_stack_lte.cc
-    export BOOST_LIB=${BOOST}/libs/arm64-v8a
     export COMMON_FLAGS="${COMMON_FLAGS} -include ${SRSLTE_DIR}/tools.new/defines.h -I${SRSLTE_DIR}/tools.new -Dtimespec_get=gettimeofday -DTIME_UTC=NULL"
 else
-    export BOOST_LIB=${BOOST}/lib
     export COMMON_FLAGS="${COMMON_FLAGS}"
     #sed  -i -e "s/add_subdirectory(test)/#add_subdirectory(test)/g" ${SRSLTE_DIR}/srsue/CMakeLists.txt
     #sed  -i -e "s/add_subdirectory(test)/#add_subdirectory(test)/g" ${SRSLTE_DIR}/srsepc/CMakeLists.txt
@@ -107,6 +118,7 @@ cmake_build() {
     ${VCMAKE} \
       -DCMAKE_INSTALL_PREFIX=$PWD/../install \
       -DENABLE_SRSENB=ON \
+      -DENABLE_UHD=ON \
       -DENABLE_SRSEPC=ON \
       -DENABLE_HARDSIM=OFF \
       -DENABLE_SOAPYSDR=OFF \
@@ -118,7 +130,7 @@ cmake_build() {
       -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
       -DBoost_FOUND=ON \
       -DBoost_LIBRARY_DIRS=${BOOST_LIB} \
-      -DBoost_LIBRARIES="boost_program_options" \
+      -DBoost_LIBRARIES="boost_program_options${BOOST_POSTFIX} -lc++_shared" \
       -DLIBCONFIGPP_INCLUDE_DIR=$LIBCONFIG/include \
       -DLIBCONFIGPP_LIBRARY=$LIBCONFIG_LIB \
       -DLIBCONFIG_INCLUDE_DIR=$LIBCONFIG/include \
@@ -150,7 +162,7 @@ cmake_build() {
 if [ "$target_system" = "android" ]; then
     cmake_build \
       -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake \
-      -DANDROID_PLATFORM=28 -DANDROID_ABI=arm64-v8a -DANDROID_ARM_NEON=ON 
+      -DANDROID_PLATFORM=28 -DANDROID_ABI=${ANDROID_ABI} -DANDROID_ARM_NEON=ON 
 else
     export TARGET=aarch64-linux-gnu
     export CC=$TARGET-gcc
