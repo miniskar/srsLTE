@@ -77,9 +77,14 @@ append_libs_to_cmake()
     sed  -i -e "s/\${CMAKE_THREAD_LIBS_INIT}/$\{CMAKE_THREAD_LIBS_INIT} mbedtls mbedcrypto fftw3f zmq sctp config config++ mbedx509/g" $f
 }
 set -x 
+if [ "$target_system" = "android" ]; then
+modules="mbedtls mbedcrypto fftw3f zmq sctp uhd config config++ mbedx509 log"
+else
+modules="mbedtls mbedcrypto fftw3f zmq sctp uhd config config++ mbedx509"
+fi
 sed -i -e "s/^# Options/set(CMAKE_SYSTEM_PROCESSOR 'aarch64')/g" -e "s/^find_package(Boost/#find_package(Boost/g" -e "s/\<c99\>/c11/g" ${SRSLTE_DIR}/CMakeLists.txt 
-sed  -i -e "s/\${SEC_LIBRARIES})/$\{SEC_LIBRARIES} mbedtls mbedcrypto fftw3f zmq sctp uhd config config++ mbedx509)/g" ${SRSLTE_DIR}/lib/src/common/CMakeLists.txt
-sed  -i -e "s/\${FFT_LIBRARIES})/$\{FFT_LIBRARIES} mbedtls mbedcrypto fftw3f zmq sctp uhd config config++ mbedx509)/g" ${SRSLTE_DIR}/lib/src/phy/CMakeLists.txt
+sed  -i -e "s/\${SEC_LIBRARIES})/$\{SEC_LIBRARIES} ${modules})/g" ${SRSLTE_DIR}/lib/src/common/CMakeLists.txt
+sed  -i -e "s/\${FFT_LIBRARIES})/$\{FFT_LIBRARIES} ${modules})/g" ${SRSLTE_DIR}/lib/src/phy/CMakeLists.txt
 sed  -i -e "s/\<SHARED\>/STATIC/g" ${SRSLTE_DIR}/lib/src/phy/rf/CMakeLists.txt
 if [ "$target_system" = "android" ]; then
     sed -i -e "s/struct timespec now = {}/struct timeval now/g" -e "s/timespec_get/gettimeofday/g" -e "s/TIME_UTC/NULL/g"  ${SRSLTE_DIR}/lib/src/phy/utils/ringbuffer.c
