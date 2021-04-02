@@ -11,6 +11,7 @@ install_libzmq=1
 install_libconfig=1
 NPROC=`nproc`
 target_system="android"
+ANDROID_ABI=arm64-v8a
 specific="all"
 if [ $# -ge 1 ]; then
     target_system=$1
@@ -85,9 +86,9 @@ cmake_build() {
     fi
     if [ "$target_system" = "android" ]; then
         if [ "x$static_build" = "x0" ]; then
-            ${VCMAKE} -DCMAKE_C_FLAGS="${EXTC_FLAGS}" -DCMAKE_CXX_FLAGS="${EXTCXX_FLAGS}" -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake -DANDROID_PLATFORM=28 -DANDROID_ABI=arm64-v8a -DANDROID_ARM_NEON=ON -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC=OFF -DBUILD_SHARED=ON -DCMAKE_EXE_LINKER_FLAGS="${EXTEXE_FLAGS}" .. $@
+            ${VCMAKE} -DCMAKE_C_FLAGS="${EXTC_FLAGS}" -DCMAKE_CXX_FLAGS="${EXTCXX_FLAGS}" -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake -DANDROID_PLATFORM=28 -DANDROID_ABI=${ANDROID_ABI} -DANDROID_ARM_NEON=ON -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC=OFF -DBUILD_SHARED=ON -DCMAKE_EXE_LINKER_FLAGS="${EXTEXE_FLAGS}" .. $@
         else
-            ${VCMAKE} -DCMAKE_C_FLAGS="${EXTC_FLAGS}" -DCMAKE_CXX_FLAGS="${EXTCXX_FLAGS}" -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake -DANDROID_PLATFORM=28 -DANDROID_ABI=arm64-v8a -DANDROID_ARM_NEON=ON -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC=ON -DBUILD_SHARED=OFF -DCMAKE_EXE_LINKER_FLAGS="${EXTEXE_FLAGS}" .. $@
+            ${VCMAKE} -DCMAKE_C_FLAGS="${EXTC_FLAGS}" -DCMAKE_CXX_FLAGS="${EXTCXX_FLAGS}" -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake -DANDROID_PLATFORM=28 -DANDROID_ABI=${ANDROID_ABI} -DANDROID_ARM_NEON=ON -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC=ON -DBUILD_SHARED=OFF -DCMAKE_EXE_LINKER_FLAGS="${EXTEXE_FLAGS}" .. $@
         fi
     else
         if [ "x$static_build" = "x0" ]; then
@@ -145,24 +146,31 @@ VCMAKE="cmake"
 if [ ! -z "${CMAKE}" ]; then
     VCMAKE=${CMAKE}
 fi
-
+#BOOST_VERSION="1_70"
+BOOST_VERSION="1_69"
+BOOST_VERSION_TAG="${BOOST_VERSION}_0"
+BLINK=`echo ${BOOST_VERSION_TAG} | sed -e "s/_/./g"`
 if [ "x$install_boost" = "x1" ]; then
     if [ "x$nodownload" = "x0" ]; then
-        wget https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.tar.gz -O boost_1_69_0.tar.gz
-        tar -xzf boost_1_69_0.tar.gz
+        wget https://dl.bintray.com/boostorg/release/${BLINK}/source/boost_${BOOST_VERSION_TAG}.tar.gz -O boost_1_69_0.tar.gz
+        tar -xzf boost_${BOOST_VERSION_TAG}.tar.gz
     fi
     if [ "$target_system" = "android" ]; then 
         if [ "x$nodownload" = "x0" ]; then
+            #git clone https://github.com/moritz-wundke/Boost-for-Android.git boost_for_android
             git clone https://github.com/dec1/Boost-for-Android.git boost_for_android
         fi
         cd boost_for_android  
-        export BOOST_DIR=$(pwd)/../boost_1_69_0
-        export ABI_NAMES="arm64-v8a"
+        mkdir -p install
+        #sed -i -e "s/<static>/shared/g" build-android.sh
+        export BOOST_DIR=$(pwd)/../boost_${BOOST_VERSION_TAG}
+        export ABI_NAMES="${ANDROID_ABI}"
         export LINKAGES="static"
+        #bash ./build-android.sh --prefix=$(pwd)/install --arch=arm64-v8a --boost=${BLINK}.0 --toolchain=llvm
         bash ./build.sh 
         cd ..
     else
-        cd boost_1_69_0
+        cd boost_${BOOST_VERSION_TAG}
         echo "using gcc : arm : aarch64-linux-gnu-g++ ;" > user_config.jam
         ./bootstrap.sh --prefix=$PWD/install
         ./b2 install toolset=gcc-arm link=static debug-symbols=on cxxflags=-fPIC --with-test --with-log --with-program_options -j${NPROC} --user-config=user_config.jam
@@ -186,12 +194,15 @@ if [ "x$install_libusb" = "x1" ]; then
     cd ..
 fi
 LIBUSB=$PWD/libusb/install
-ANDROID_ABI=arm64-v8a
 export BOOST_POSTFIX=
 if [ "$target_system" = "android" ]; then 
 export BOOST=$PWD/boost_for_android/build/install
-export BOOST_LIB=${BOOST}/libs/arm64-v8a
+export BOOST_LIB=${BOOST}/libs/${ANDROID_ABI}
 export BOOST_INC=${BOOST}/include
+#export BOOST=$PWD/boost_for_android/install
+#export BOOST_INC=${BOOST}/${ANDROID_ABI}/include/boost-${BOOST_VERSION}
+#export BOOST_LIB=${BOOST}/${ANDROID_ABI}/lib
+#export BOOST_POSTFIX=-clang-mt-a64-${BOOST_VERSION}
 else
 export BOOST=$PWD/boost_${BOOST_VERSION}/install
 export BOOST_LIB=${BOOST}/lib
