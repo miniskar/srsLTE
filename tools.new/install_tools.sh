@@ -220,8 +220,6 @@ if [ "x$install_uhd" = "x1" ]; then
     cd build
     CMAKE_CXX_FLAGS='-Wno-format-security'
     BLIBS=""
-    sed -i -e "s/libuhd_libs})/libuhd_libs} ${BLIBS})/g" ../lib/CMakeLists.txt 
-    sed -i -e "s/libuhd_libs} log)/libuhd_libs} log ${BLIBS})/g" ../lib/CMakeLists.txt 
     sed -i -e "s/\<native\>/native_handle/g"  ../examples/network_relay.cpp
     sed -i -e "s/\<native\>/native_handle/g"  ../lib/transport/udp_zero_copy.cpp
     sed -i -e "s/\<native\>/native_handle/g"  ../lib/transport/udp_simple.cpp
@@ -233,8 +231,10 @@ if [ "x$install_uhd" = "x1" ]; then
         for i in chrono date_time filesystem program_options regex system unit_test_framework serialization atomic thread; do 
         BLIBS="${BLIBS} boost_${i}${BOOST_POSTFIX}";
         done
+        sed -i -e "s/libuhd_libs})/libuhd_libs} ${BLIBS})/g" ../lib/CMakeLists.txt 
+        sed -i -e "s/libuhd_libs} log)/libuhd_libs} log ${BLIBS})/g" ../lib/CMakeLists.txt 
         CMAKE_EXE_LINKER_FLAGS="-L${BOOST_LIB} -lboost_atomic${BOOST_POSTFIX} -lboost_chrono${BOOST_POSTFIX} -lc++_shared " 
-        cmake_build -DBUILD_SHARED=ON -DBUILD_SHARED_LIBS=ON -DNEON_SIMD_ENABLE=ON \
+        cmake_build -DBUILD_SHARED=OFF -DBUILD_SHARED_LIBS=OFF -DNEON_SIMD_ENABLE=ON \
                    -DBoost_NO_BOOST_CMAKE=TRUE \
                    -DBoost_NO_SYSTEM_PATHS=TRUE \
                    -DANDROID=ON \
@@ -245,7 +245,7 @@ if [ "x$install_uhd" = "x1" ]; then
                    -DBoost_INCLUDE_DIRS:FILEPATH=${BOOST_INC} \
                    -DLIBUSB_INCLUDE_DIRS=$LIBUSB/include/libusb-1.0 \
                    -DLIBUSB_LIBRARIES="$LIBUSB/lib/libusb-1.0.a"\
-                   -DENABLE_STATIC_LIBS=False -DENABLE_USRP1=False \
+                   -DENABLE_STATIC_LIBS=True -DENABLE_USRP1=False \
                    -DENABLE_USRP2=False -DENABLE_B100=False \
                    -DENABLE_X300=False -DENABLE_OCTOCLOCK=False \
                    -DENABLE_TESTS=False -DENABLE_ORC=False 
@@ -253,6 +253,8 @@ if [ "x$install_uhd" = "x1" ]; then
         for i in chrono date_time filesystem program_options regex system unit_test_framework atomic thread; do 
         BLIBS="${BLIBS} boost_${i}${BOOST_POSTFIX}";
         done
+        sed -i -e "s/libuhd_libs})/libuhd_libs} ${BLIBS})/g" ../lib/CMakeLists.txt 
+        sed -i -e "s/libuhd_libs} log)/libuhd_libs} log ${BLIBS})/g" ../lib/CMakeLists.txt 
         CMAKE_EXE_LINKER_FLAGS="-L${BOOST_LIB} -lboost_atomic${BOOST_POSTFIX} -lboost_chrono${BOOST_POSTFIX} " 
         cmake_build -DBUILD_SHARED=OFF -DBUILD_SHARED_LIBS=OFF -DNEON_SIMD_ENABLE=ON \
                        -DBOOST_ROOT=$BOOST_DIR/install \
