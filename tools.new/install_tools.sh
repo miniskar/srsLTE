@@ -1,6 +1,8 @@
 set -x
 static_build=1
 install_iris=1
+install_libusb=1
+install_uhd=1
 install_boost=1
 install_fftw3=1
 install_lksctp=1
@@ -21,6 +23,8 @@ if [ $# -ge 3 ]; then
     nodownload=$3
 fi 
 if [ "x$specific" = "xall" ]; then
+    install_libusb=1
+    install_uhd=1
     install_iris=1
     install_boost=1
     install_fftw3=1
@@ -29,6 +33,8 @@ if [ "x$specific" = "xall" ]; then
     install_libzmq=1
     install_libconfig=1
 else
+    install_libusb=0
+    install_uhd=0
     install_iris=0
     install_boost=0
     install_fftw3=0
@@ -36,6 +42,12 @@ else
     install_mbedtls=0
     install_libzmq=0
     install_libconfig=0
+    if [ "$specific" = "libusb" ]; then
+        install_libusb=1
+    fi
+    if [ "$specific" = "uhd" ]; then
+        install_uhd=1
+    fi
     if [ "$specific" = "iris" ]; then
         install_iris=1
     fi
@@ -61,23 +73,27 @@ fi
 cmake_build() {
     EXTC_FLAGS="-fPIC -g "
     EXTCXX_FLAGS="-fPIC -g "
+    EXTEXE_FLAGS=""
     if [ ! -z "${CMAKE_C_FLAGS}" ]; then
         EXTC_FLAGS="${CMAKE_C_FLAGS} $EXTC_FLAGS"
     fi
     if [ ! -z "${CMAKE_CXX_FLAGS}" ]; then
         EXTCXX_FLAGS="${CMAKE_CXX_FLAGS} $EXTCXX_FLAGS"
     fi
+    if [ ! -z "${CMAKE_EXE_LINKER_FLAGS}" ]; then
+        EXTEXE_FLAGS="${CMAKE_EXE_LINKER_FLAGS} $EXTEXE_FLAGS"
+    fi
     if [ "$target_system" = "android" ]; then
         if [ "x$static_build" = "x0" ]; then
-            ${VCMAKE} -DCMAKE_C_FLAGS="${EXTC_FLAGS}" -DCMAKE_CXX_FLAGS="${EXTCXX_FLAGS}" -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake -DANDROID_PLATFORM=28 -DANDROID_ABI=arm64-v8a -DANDROID_ARM_NEON=ON -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC=OFF -DBUILD_SHARED=ON .. $@
+            ${VCMAKE} -DCMAKE_C_FLAGS="${EXTC_FLAGS}" -DCMAKE_CXX_FLAGS="${EXTCXX_FLAGS}" -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake -DANDROID_PLATFORM=28 -DANDROID_ABI=arm64-v8a -DANDROID_ARM_NEON=ON -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC=OFF -DBUILD_SHARED=ON -DCMAKE_EXE_LINKER_FLAGS="${EXTEXE_FLAGS}" .. $@
         else
-            ${VCMAKE} -DCMAKE_C_FLAGS="${EXTC_FLAGS}" -DCMAKE_CXX_FLAGS="${EXTCXX_FLAGS}" -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake -DANDROID_PLATFORM=28 -DANDROID_ABI=arm64-v8a -DANDROID_ARM_NEON=ON -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC=ON -DBUILD_SHARED=OFF .. $@
+            ${VCMAKE} -DCMAKE_C_FLAGS="${EXTC_FLAGS}" -DCMAKE_CXX_FLAGS="${EXTCXX_FLAGS}" -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake -DANDROID_PLATFORM=28 -DANDROID_ABI=arm64-v8a -DANDROID_ARM_NEON=ON -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC=ON -DBUILD_SHARED=OFF -DCMAKE_EXE_LINKER_FLAGS="${EXTEXE_FLAGS}" .. $@
         fi
     else
         if [ "x$static_build" = "x0" ]; then
-            ${VCMAKE} -DCMAKE_C_FLAGS="${EXTC_FLAGS}" -DCMAKE_CXX_FLAGS="${EXTCXX_FLAGS}" -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC=OFF -DBUILD_SHARED=ON .. $@
+            ${VCMAKE} -DCMAKE_C_FLAGS="${EXTC_FLAGS}" -DCMAKE_CXX_FLAGS="${EXTCXX_FLAGS}" -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC=OFF -DBUILD_SHARED=ON -DCMAKE_EXE_LINKER_FLAGS="${EXTEXE_FLAGS}" .. $@
         else
-            ${VCMAKE} -DCMAKE_C_FLAGS="${EXTC_FLAGS}" -DCMAKE_CXX_FLAGS="${EXTCXX_FLAGS}" -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC=ON -DBUILD_SHARED=OFF .. $@
+            ${VCMAKE} -DCMAKE_C_FLAGS="${EXTC_FLAGS}" -DCMAKE_CXX_FLAGS="${EXTCXX_FLAGS}" -DCMAKE_INSTALL_PREFIX=$PWD/../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC=ON -DBUILD_SHARED=OFF -DCMAKE_EXE_LINKER_FLAGS="${EXTEXE_FLAGS}" .. $@
         fi
     fi
     unset CMAKE_C_FLAGS
@@ -105,10 +121,16 @@ export CXX=$TOOLCHAIN/bin/$TARGET$API-clang++
 export LD=$TOOLCHAIN/bin/$TARGET-ld
 export RANLIB=$TOOLCHAIN/bin/$TARGET-ranlib
 export STRIP=$TOOLCHAIN/bin/$TARGET-strip
-else
-if [ "$target_system" = "clean" ]; then
-rm -rf *.tar.gz boost* iris fft* mbedtls libconfig libzmq lksctp-tools
+elif [ "$target_system" = "clean" ]; then
+rm -rf *.tar.gz boost* uhd libusb iris fft* mbedtls libconfig libzmq lksctp-tools
 exit
+elif [ "$target_system" = "host" ]; then
+export CC=gcc
+export CXX=g++
+export LD=ld
+export AR=ar
+export RANLIB=ranlib
+export STRIP=strip
 else
 export TARGET=aarch64-linux-gnu
 export CC=$TARGET-gcc
@@ -117,7 +139,6 @@ export LD=$TARGET-ld
 export AR=$TARGET-ar
 export RANLIB=$TARGET-ranlib
 export STRIP=$TARGET-strip
-fi
 fi
 
 VCMAKE="cmake"
@@ -149,6 +170,76 @@ if [ "x$install_boost" = "x1" ]; then
     fi
 fi
 
+if [ "x$install_libusb" = "x1" ]; then
+    if [ "x$nodownload" = "x0" ]; then
+        #git clone https://github.com/libusb/libusb.git
+        git clone https://github.com/trondeau/libusb.git
+    fi
+    cd libusb
+    sh bootstrap.sh
+    mkdir -p build 
+    cd build
+    automake_build --enable-udev=no 
+    make -j${NPROC}
+    make -j${NPROC} install 
+    cd ..
+    cd ..
+fi
+LIBUSB=$PWD/libusb/install
+ANDROID_ABI=arm64-v8a
+export BOOST_POSTFIX=
+if [ "$target_system" = "android" ]; then 
+export BOOST=$PWD/boost_for_android/build/install
+export BOOST_LIB=${BOOST}/libs/arm64-v8a
+export BOOST_INC=${BOOST}/include
+else
+export BOOST=$PWD/boost_${BOOST_VERSION}/install
+export BOOST_LIB=${BOOST}/lib
+export BOOST_INC=${BOOST}/include
+fi
+if [ "x$install_uhd" = "x1" ]; then
+    if [ "x$nodownload" = "x0" ]; then
+        #git clone https://github.com/EttusResearch/uhd.git
+        git clone https://github.com/trondeau/uhd.git
+    fi
+    cd uhd/host
+    mkdir -p build 
+    cd build
+    CMAKE_CXX_FLAGS='-Wno-format-security'
+    CMAKE_EXE_LINKER_FLAGS="-L${BOOST_LIB} -lboost_atomic${BOOST_POSTFIX} -lboost_chrono${BOOST_POSTFIX} -lc++_shared " 
+    BLIBS=""
+    for i in chrono date_time filesystem program_options regex system unit_test_framework serialization atomic thread; do 
+    BLIBS="${BLIBS} boost_${i}${BOOST_POSTFIX}";
+    done
+    sed -i -e "s/libuhd_libs} log)/libuhd_libs} log ${BLIBS})/g" ../lib/CMakeLists.txt 
+    sed -i -e "s/native/native_handle/g"  ../examples/network_relay.cpp
+    sed -i -e "s/native/native_handle/g"  ../lib/transport/udp_zero_copy.cpp
+    sed -i -e "s/native/native_handle/g"  ../lib/transport/udp_simple.cpp
+    sed -i -e "s/native/native_handle/g"  ../lib/transport/tcp_zero_copy.cpp
+    sed -i -e "s/Boost_FOUND;HAVE_PYTHON_PLAT_MIN_VERSION;HAVE_PYTHON_MODULE_MAKO//g" ../CMakeLists.txt
+    sed -i -e "s/posix_time::seconds(setup/posix_time::seconds((unsigned long long)setup/g" ../examples/rx_samples_to_file.cpp
+    sed -i -e "s/posix_time::milliseconds(delay/posix_time::milliseconds((unsigned long long)delay/g" ../examples/tx_samples_from_file.cpp
+    cmake_build -DBUILD_SHARED=ON -DBUILD_SHARED_LIBS=ON -DNEON_SIMD_ENABLE=ON \
+                       -DBoost_NO_BOOST_CMAKE=TRUE \
+                       -DBoost_NO_SYSTEM_PATHS=TRUE \
+                       -DANDROID=ON \
+                       -DBOOST_VERSION=$BOOST_POSTFIX \
+                       -DBoost_THREAD_LIBRARY_RELEASE:FILEPATH=${BOOST_LIB} \
+                       -DBoost_LIBRARY_DIRS:FILEPATH=${BOOST_LIB} \
+                       -DBoost_INCLUDE_DIR:FILEPATH=${BOOST_INC} \
+                       -DBoost_INCLUDE_DIRS:FILEPATH=${BOOST_INC} \
+                       -DLIBUSB_INCLUDE_DIRS=$LIBUSB/include/libusb-1.0 \
+                       -DLIBUSB_LIBRARIES="$LIBUSB/lib/libusb-1.0.a"\
+                       -DENABLE_STATIC_LIBS=False -DENABLE_USRP1=False \
+                       -DENABLE_USRP2=False -DENABLE_B100=False \
+                       -DENABLE_X300=False -DENABLE_OCTOCLOCK=False \
+                       -DENABLE_TESTS=False -DENABLE_ORC=False 
+    make -j${NPROC}
+    make -j${NPROC} install 
+    cd ..
+    cd ../../
+fi
+
 if [ "x$install_iris" = "x1" ]; then
     if [ "x$nodownload" = "x0" ]; then
         git clone -b oe https://code.ornl.gov/eck/brisbane-rts.git iris
@@ -156,11 +247,7 @@ if [ "x$install_iris" = "x1" ]; then
     cd iris
     mkdir -p build 
     cd build 
-    if [ "$target_system" = "android" ]; then 
     cmake_build -DBUILD_SHARED=ON -DBUILD_SHARED_LIBS=ON
-    else
-    cmake_build -DBUILD_SHARED=ON -DBUILD_SHARED_LIBS=ON
-    fi
     make -j${NPROC}
     make -j${NPROC} install 
     cd ..
@@ -178,7 +265,8 @@ if [ "x$install_fftw3" = "x1" ]; then
     if [ "$target_system" = "android" ]; then 
     cmake_build -DCMAKE_C_FLAGS='-g' -DCMAKE_CXX_FLAGS='-g' -DENABLE_LONG_DOUBLE=OFF -DENABLE_FLOAT=ON -DENABLE_QUAD_PRECISION=OFF 
     else
-    cmake_build -DCMAKE_C_FLAGS='-g' -DCMAKE_CXX_FLAGS='-g' -DCMAKE_EXE_LINKER_FLAGS='-lm' -DENABLE_LONG_DOUBLE=OFF -DENABLE_FLOAT=ON -DENABLE_QUAD_PRECISION=OFF -DBUILD_TESTS=OFF
+    CMAKE_EXE_LINKER_FLAGS="-lm"
+    cmake_build -DCMAKE_C_FLAGS='-g' -DCMAKE_CXX_FLAGS='-g' -DENABLE_LONG_DOUBLE=OFF -DENABLE_FLOAT=ON -DENABLE_QUAD_PRECISION=OFF -DBUILD_TESTS=OFF
     fi
     make -j${NPROC} 
     make -j${NPROC} install 
