@@ -174,7 +174,7 @@ if [ "x$install_boost" = "x1" ]; then
         cd boost_${BOOST_VERSION_TAG}
         echo "using gcc : arm : aarch64-linux-gnu-g++ ;" > user_config.jam
         ./bootstrap.sh --prefix=$PWD/install
-        ./b2 install toolset=gcc-arm link=static debug-symbols=on cxxflags=-fPIC --with-test --with-log --with-program_options -j${NPROC} --user-config=user_config.jam
+        ./b2 install toolset=gcc-arm link=static debug-symbols=on cxxflags=-fPIC --with-test --with-log --with-serialization --with-program_options -j${NPROC} --user-config=user_config.jam
         cd ..
     fi
 fi
@@ -212,9 +212,10 @@ export BOOST_INC=${BOOST}/include
 fi
 if [ "x$install_uhd" = "x1" ]; then
     if [ "x$nodownload" = "x0" ]; then
-        #git clone https://github.com/EttusResearch/uhd.git
-        git clone https://github.com/trondeau/uhd.git
+        git clone https://github.com/EttusResearch/uhd.git
+        #git clone https://github.com/trondeau/uhd.git
     fi
+    pip3 install mako requests --user
     cd uhd/host
     mkdir -p build 
     cd build
@@ -227,6 +228,7 @@ if [ "x$install_uhd" = "x1" ]; then
     sed -i -e "s/Boost_FOUND;HAVE_PYTHON_PLAT_MIN_VERSION;HAVE_PYTHON_MODULE_MAKO//g" ../CMakeLists.txt
     sed -i -e "s/posix_time::seconds(setup/posix_time::seconds((unsigned long long)setup/g" ../examples/rx_samples_to_file.cpp
     sed -i -e "s/posix_time::milliseconds(delay/posix_time::milliseconds((unsigned long long)delay/g" ../examples/tx_samples_from_file.cpp
+    CMAKE_CXX_FLAGS="-I${PWD}/_cmrc/include"
     if [ "$target_system" = "android" ]; then 
         for i in chrono date_time filesystem program_options regex system unit_test_framework serialization atomic thread; do 
         BLIBS="${BLIBS} boost_${i}${BOOST_POSTFIX}";
