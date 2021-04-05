@@ -181,8 +181,8 @@ fi
 
 if [ "x$install_libusb" = "x1" ]; then
     if [ "x$nodownload" = "x0" ]; then
-        #git clone https://github.com/libusb/libusb.git
-        git clone https://github.com/trondeau/libusb.git
+        git clone https://github.com/libusb/libusb.git
+        #git clone https://github.com/trondeau/libusb.git
     fi
     cd libusb
     sh bootstrap.sh
