@@ -168,7 +168,9 @@ if [ "x$install_boost" = "x1" ]; then
         export ABI_NAMES="${ANDROID_ABI}"
         export LINKAGES="static"
         #bash ./build-android.sh --prefix=$(pwd)/install --arch=arm64-v8a --boost=${BLINK}.0 --toolchain=llvm
+        #export WITH_LIBRARIES="--with-serialization --with-program_options"
         bash ./build.sh 
+        cp -rf build/install/libs/${ANDROID_ABI}/*.a build/install/libs/.
         cd ..
     else
         cd boost_${BOOST_VERSION_TAG}
@@ -219,7 +221,7 @@ if [ "x$install_uhd" = "x1" ]; then
     cd uhd/host
     mkdir -p build 
     cd build
-    CMAKE_CXX_FLAGS='-Wno-format-security'
+    CMAKE_CXX_FLAGS='-I${PWD}/_cmrc/include -Wno-format-security'
     BLIBS=""
     sed -i -e "s/\<native\>/native_handle/g"  ../examples/network_relay.cpp
     sed -i -e "s/\<native\>/native_handle/g"  ../lib/transport/udp_zero_copy.cpp
@@ -228,12 +230,16 @@ if [ "x$install_uhd" = "x1" ]; then
     sed -i -e "s/Boost_FOUND;HAVE_PYTHON_PLAT_MIN_VERSION;HAVE_PYTHON_MODULE_MAKO//g" ../CMakeLists.txt
     sed -i -e "s/posix_time::seconds(setup/posix_time::seconds((unsigned long long)setup/g" ../examples/rx_samples_to_file.cpp
     sed -i -e "s/posix_time::milliseconds(delay/posix_time::milliseconds((unsigned long long)delay/g" ../examples/tx_samples_from_file.cpp
-    CMAKE_CXX_FLAGS="-I${PWD}/_cmrc/include"
     if [ "$target_system" = "android" ]; then 
+        sed -i -e "s/#else\s*$/#else \/\/\n#if 0/g" -e "s/if (path.empty()) {\s*$/{ \/\//g" -e "s/#endif\s*$/#endif \/\/\n#endif \/\//g" ../lib/utils/pathslib.cpp
+        sed -i -e "s/\<gethostid()/0/g" ../lib/utils/platform.cpp
         for i in chrono date_time filesystem program_options regex system unit_test_framework serialization atomic thread; do 
         BLIBS="${BLIBS} boost_${i}${BOOST_POSTFIX}";
         done
+        sed -i -e "s/\"\<pthread\>\"/\"\"/g" ../CMakeLists.txt
+        sed -i -e "s/\"\<pthread\>\"/\"\"/g" -e "s/LIBUHD_APPEND_LIBS(pthread)//g" ../lib/utils/CMakeLists.txt
         sed -i -e "s/libuhd_libs})/libuhd_libs} ${BLIBS})/g" ../lib/CMakeLists.txt 
+        sed -i -e "s/libuhd_libs} uhd_rc)/libuhd_libs} uhd_rc ${BLIBS})/g" ../lib/CMakeLists.txt 
         sed -i -e "s/libuhd_libs} log)/libuhd_libs} log ${BLIBS})/g" ../lib/CMakeLists.txt 
         CMAKE_EXE_LINKER_FLAGS="-L${BOOST_LIB} -lboost_atomic${BOOST_POSTFIX} -lboost_chrono${BOOST_POSTFIX} -lc++_shared " 
         cmake_build -DBUILD_SHARED=OFF -DBUILD_SHARED_LIBS=OFF -DNEON_SIMD_ENABLE=ON \
