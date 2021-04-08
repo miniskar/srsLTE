@@ -78,9 +78,13 @@ append_libs_to_cmake()
 }
 set -x 
 if [ "$target_system" = "android" ]; then
-modules="mbedtls mbedcrypto fftw3f zmq sctp uhd config config++ mbedx509 log  c++_shared"
+    modules="mbedtls mbedcrypto fftw3f zmq sctp uhd config config++ mbedx509 log  c++_shared"
 else
-modules="mbedtls mbedcrypto fftw3f zmq sctp uhd config config++ mbedx509"
+    BLIBS=""
+    for i in chrono date_time filesystem program_options regex system timer unit_test_framework atomic thread; do 
+        BLIBS="${BLIBS} boost_${i}${BOOST_POSTFIX}";
+    done
+    modules="mbedtls mbedcrypto fftw3f zmq sctp uhd config config++ mbedx509 ${BLIBS} dl"
 fi
 sed -i -e "s/^# Options/set(CMAKE_SYSTEM_PROCESSOR 'aarch64')/g" -e "s/^find_package(Boost/#find_package(Boost/g" -e "s/\<c99\>/c11/g" ${SRSLTE_DIR}/CMakeLists.txt 
 sed  -i -e "s/\${SEC_LIBRARIES})/$\{SEC_LIBRARIES} ${modules})/g" ${SRSLTE_DIR}/lib/src/common/CMakeLists.txt

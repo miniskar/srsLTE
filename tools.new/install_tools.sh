@@ -176,7 +176,7 @@ if [ "x$install_boost" = "x1" ]; then
         cd boost_${BOOST_VERSION_TAG}
         echo "using gcc : arm : aarch64-linux-gnu-g++ ;" > user_config.jam
         ./bootstrap.sh --prefix=$PWD/install
-        ./b2 install toolset=gcc-arm link=static debug-symbols=on cxxflags=-fPIC --with-test --with-log --with-serialization --with-program_options -j${NPROC} --user-config=user_config.jam
+        ./b2 install toolset=gcc-arm debug-symbols=on cxxflags=-fPIC --with-test --with-log --with-serialization --with-program_options -j${NPROC} --user-config=user_config.jam
         cd ..
     fi
 fi
@@ -259,7 +259,7 @@ if [ "x$install_uhd" = "x1" ]; then
                    -DENABLE_TESTS=False -DENABLE_ORC=False 
     else
         for i in chrono date_time filesystem program_options regex system unit_test_framework atomic thread; do 
-        BLIBS="${BLIBS} boost_${i}${BOOST_POSTFIX}";
+            BLIBS="${BLIBS} boost_${i}${BOOST_POSTFIX}";
         done
         sed -i -e "s/libuhd_libs})/libuhd_libs} ${BLIBS})/g" ../lib/CMakeLists.txt 
         sed -i -e "s/libuhd_libs} log)/libuhd_libs} log ${BLIBS})/g" ../lib/CMakeLists.txt 
