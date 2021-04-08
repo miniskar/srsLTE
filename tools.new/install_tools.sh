@@ -284,12 +284,6 @@ if [ "x$install_uhd" = "x1" ]; then
     make -j${NPROC}
     make -j${NPROC} install 
     cd ..
-    if [ -d $(pwd)/install/lib ]; then
-        rm -f $(pwd)/install/lib/libuhd.so*
-    fi
-    if [ -d $(pwd)/install/lib64 ]; then
-        rm -f $(pwd)/install/lib64/libuhd.so*
-    fi
     cd ../../
 fi
 
