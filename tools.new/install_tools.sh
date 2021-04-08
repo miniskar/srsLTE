@@ -242,7 +242,7 @@ if [ "x$install_uhd" = "x1" ]; then
         sed -i -e "s/libuhd_libs} uhd_rc)/libuhd_libs} uhd_rc ${BLIBS})/g" ../lib/CMakeLists.txt 
         sed -i -e "s/libuhd_libs} log)/libuhd_libs} log ${BLIBS})/g" ../lib/CMakeLists.txt 
         CMAKE_EXE_LINKER_FLAGS="-L${BOOST_LIB} -lboost_atomic${BOOST_POSTFIX} -lboost_chrono${BOOST_POSTFIX} -lc++_shared " 
-        cmake_build -DBUILD_SHARED=OFF -DBUILD_SHARED_LIBS=OFF -DNEON_SIMD_ENABLE=ON \
+        cmake_build -DBUILD_SHARED=ON -DBUILD_SHARED_LIBS=ON -DNEON_SIMD_ENABLE=ON \
                    -DBoost_NO_BOOST_CMAKE=TRUE \
                    -DBoost_NO_SYSTEM_PATHS=TRUE \
                    -DANDROID=ON \
@@ -264,7 +264,7 @@ if [ "x$install_uhd" = "x1" ]; then
         sed -i -e "s/libuhd_libs})/libuhd_libs} ${BLIBS})/g" ../lib/CMakeLists.txt 
         sed -i -e "s/libuhd_libs} log)/libuhd_libs} log ${BLIBS})/g" ../lib/CMakeLists.txt 
         CMAKE_EXE_LINKER_FLAGS="-L${BOOST_LIB} -lboost_atomic${BOOST_POSTFIX} -lboost_chrono${BOOST_POSTFIX} " 
-        cmake_build -DBUILD_SHARED=OFF -DBUILD_SHARED_LIBS=OFF -DNEON_SIMD_ENABLE=ON \
+        cmake_build -DBUILD_SHARED=ON -DBUILD_SHARED_LIBS=ON -DNEON_SIMD_ENABLE=ON \
                        -DBOOST_ROOT=$BOOST_DIR/install \
                        -DBOOST_VERSION=$BOOST_POSTFIX \
                        -DENABLE_EXAMPLES=OFF \
