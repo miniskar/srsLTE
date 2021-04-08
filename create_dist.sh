@@ -13,11 +13,15 @@ fi
 mkdir -p $INST_DIR/lib 
 mkdir -p $INST_DIR/lib64 
 for i in boost_1_69_0 fftw-3.3.8 libconfig mbedtls libzmq lksctp-tools iris libusb uhd; do
-if [ -d $SRSLTE_DIR/$TOOLS_DIR/$i/install/lib ]; then
-    cp -rf $SRSLTE_DIR/$TOOLS_DIR/$i/install/lib/* ${SRSLTE_DIR}/${INST_DIR}/lib/. ;
+install_comp_dir=$SRSLTE_DIR/$TOOLS_DIR/$i/install
+if [ "$i" = "uhd" ]; then
+install_comp_dir=$SRSLTE_DIR/$TOOLS_DIR/$i/host/install
 fi
-if [ -d $SRSLTE_DIR/$TOOLS_DIR/$i/install/lib64 ]; then
-    cp -rf $SRSLTE_DIR/$TOOLS_DIR/$i/install/lib64/* ${SRSLTE_DIR}/${INST_DIR}/lib64/. ;
+if [ -d $install_comp_dir/lib ]; then
+    cp -rf $install_comp_dir/lib/* ${SRSLTE_DIR}/${INST_DIR}/lib/. ;
+fi
+if [ -d $install_comp_dir/lib64 ]; then
+    cp -rf $install_comp_dir/lib64/* ${SRSLTE_DIR}/${INST_DIR}/lib64/. ;
 fi
 done
 sed -i -e "s/^SRSLTE_INSTALL_DIR.*$INST_DIR\//SRSLTE_INSTALL_DIR=\"\$PWD\//g" $INST_DIR/bin/srslte_install_configs.sh
