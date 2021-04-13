@@ -190,7 +190,7 @@ fi
 if [ "x$install_ncurses" = "x1" ]; then
     if [ "x$nodownload" = "x0" ]; then
         wget https://ftp.gnu.org/pub/gnu/ncurses/ncurses-6.2.tar.gz
-        tar -xvzf ncurses-5.7.tar.gz
+        tar -xvzf ncurses-6.2.tar.gz
     fi
     cd ncurses-6.2
     mkdir -p build 
