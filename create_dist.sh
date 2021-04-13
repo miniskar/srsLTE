@@ -13,7 +13,7 @@ fi
 mkdir -p $INST_DIR/share
 mkdir -p $INST_DIR/lib 
 mkdir -p $INST_DIR/lib64 
-for i in boost_1_69_0 fftw-3.3.8 libconfig mbedtls libzmq lksctp-tools iris libusb uhd; do
+for i in boost_1_69_0 fftw-3.3.8 ncurses libconfig mbedtls libzmq lksctp-tools iris libusb uhd; do
 install_comp_dir=$SRSLTE_DIR/$TOOLS_DIR/$i/install
 if [ "$i" = "uhd" ]; then
 install_comp_dir=$SRSLTE_DIR/$TOOLS_DIR/$i/host/install
