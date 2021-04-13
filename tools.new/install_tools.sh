@@ -2,6 +2,7 @@ set -x
 static_build=1
 install_iris=1
 install_libusb=1
+install_ncurses=1
 install_uhd=1
 install_boost=1
 install_fftw3=1
@@ -25,6 +26,7 @@ if [ $# -ge 3 ]; then
 fi 
 if [ "x$specific" = "xall" ]; then
     install_libusb=1
+    install_ncurses=1
     install_uhd=1
     install_iris=1
     install_boost=1
@@ -35,6 +37,7 @@ if [ "x$specific" = "xall" ]; then
     install_libconfig=1
 else
     install_libusb=0
+    install_ncurses=0
     install_uhd=0
     install_iris=0
     install_boost=0
@@ -43,6 +46,9 @@ else
     install_mbedtls=0
     install_libzmq=0
     install_libconfig=0
+    if [ "$specific" = "ncurses" ]; then
+        install_ncurses=1
+    fi
     if [ "$specific" = "libusb" ]; then
         install_libusb=1
     fi
@@ -176,11 +182,28 @@ if [ "x$install_boost" = "x1" ]; then
         cd boost_${BOOST_VERSION_TAG}
         echo "using gcc : arm : aarch64-linux-gnu-g++ ;" > user_config.jam
         ./bootstrap.sh --prefix=$PWD/install
-        ./b2 install toolset=gcc-arm debug-symbols=on cxxflags=-fPIC --with-test --with-log --with-serialization --with-program_options -j${NPROC} --user-config=user_config.jam
+        ./b2 install toolset=gcc-arm debug-symbols=on cxxflags=-fPIC --with-test --with-log --with-chrono --with-date_time --with-filesystem --with-regex --with-atomic --with-system --with-serialization --with-test --with-timer --with-thread --with-program_options  --user-config=user_config.jam -j${NPROC}
         cd ..
     fi
 fi
 
+if [ "x$install_ncurses" = "x1" ]; then
+    if [ "x$nodownload" = "x0" ]; then
+        wget https://ftp.gnu.org/pub/gnu/ncurses/ncurses-6.2.tar.gz
+        tar -xvzf ncurses-5.7.tar.gz
+    fi
+    cd ncurses-6.2
+    mkdir -p build 
+    cd build
+    automake_build 
+    make -j${NPROC}
+    make -j${NPROC} install -i
+    cd ..
+    cd ..
+fi
+export NCURSES=$PWD/ncurses-6.2
+export NCURSES_LIB=$NCURSES/install/lib
+export NCURSES_INC=$NCURSES/install/include
 if [ "x$install_libusb" = "x1" ]; then
     if [ "x$nodownload" = "x0" ]; then
         git clone https://github.com/libusb/libusb.git
@@ -233,11 +256,12 @@ if [ "x$install_uhd" = "x1" ]; then
     if [ "$target_system" = "android" ]; then 
         sed -i -e "s/#else\s*$/#else \/\/\n#if 0/g" -e "s/if (path.empty()) {\s*$/{ \/\//g" -e "s/#endif\s*$/#endif \/\/\n#endif \/\//g" ../lib/utils/pathslib.cpp
         sed -i -e "s/\<gethostid()/0/g" ../lib/utils/platform.cpp
-        for i in chrono date_time filesystem program_options regex system unit_test_framework serialization atomic thread; do 
+        for i in chrono date_time filesystem program_options regex system timer unit_test_framework serialization atomic thread; do 
         BLIBS="${BLIBS} boost_${i}${BOOST_POSTFIX}";
         done
         sed -i -e "s/\"\<pthread\>\"/\"\"/g" ../CMakeLists.txt
         sed -i -e "s/\"\<pthread\>\"/\"\"/g" -e "s/LIBUHD_APPEND_LIBS(pthread)//g" ../lib/utils/CMakeLists.txt
+        sed -i -e "s/Boost_LIBRARIES})/Boost_LIBRARIES} ${BLIBS})/g" ../utils/CMakeLists.txt 
         sed -i -e "s/libuhd_libs})/libuhd_libs} ${BLIBS})/g" ../lib/CMakeLists.txt 
         sed -i -e "s/libuhd_libs} uhd_rc)/libuhd_libs} uhd_rc ${BLIBS})/g" ../lib/CMakeLists.txt 
         sed -i -e "s/libuhd_libs} log)/libuhd_libs} log ${BLIBS})/g" ../lib/CMakeLists.txt 
@@ -256,19 +280,23 @@ if [ "x$install_uhd" = "x1" ]; then
                    -DENABLE_STATIC_LIBS=True -DENABLE_USRP1=False \
                    -DENABLE_USRP2=False -DENABLE_B100=False \
                    -DENABLE_X300=False -DENABLE_OCTOCLOCK=False \
+                   -DENABLE_UTILS=ON \
                    -DENABLE_TESTS=False -DENABLE_ORC=False 
     else
-        for i in chrono date_time filesystem program_options regex system unit_test_framework atomic thread; do 
+        for i in chrono date_time filesystem program_options regex system timer unit_test_framework atomic thread; do 
             BLIBS="${BLIBS} boost_${i}${BOOST_POSTFIX}";
         done
+        sed -i -e "s/Boost_LIBRARIES})/Boost_LIBRARIES} ${BLIBS})/g" ../utils/CMakeLists.txt 
+        sed -i -e s/'${CURSES_LIBRARIES})'/"ncurses ${BLIBS})"/g ../utils/latency/CMakeLists.txt 
         sed -i -e "s/libuhd_libs})/libuhd_libs} ${BLIBS})/g" ../lib/CMakeLists.txt 
         sed -i -e "s/libuhd_libs} log)/libuhd_libs} log ${BLIBS})/g" ../lib/CMakeLists.txt 
-        CMAKE_EXE_LINKER_FLAGS="-L${BOOST_LIB} -lboost_atomic${BOOST_POSTFIX} -lboost_chrono${BOOST_POSTFIX} " 
+        CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -I${NCURSES_INC}/ncurses -I${NCURSES_INC}"
+        CMAKE_EXE_LINKER_FLAGS="-L${NCURSES_LIB} -L${BOOST_LIB} -lncurses -lboost_atomic${BOOST_POSTFIX} -lboost_chrono${BOOST_POSTFIX} " 
         cmake_build -DBUILD_SHARED=ON -DBUILD_SHARED_LIBS=ON -DNEON_SIMD_ENABLE=ON \
                        -DBOOST_ROOT=$BOOST_DIR/install \
                        -DBOOST_VERSION=$BOOST_POSTFIX \
                        -DENABLE_EXAMPLES=OFF \
-                       -DENABLE_UTILS=OFF \
+                       -DENABLE_UTILS=ON \
                        -DENABLE_TESTS=OFF \
                        -DBoost_THREAD_LIBRARY_RELEASE:FILEPATH=${BOOST_LIB} \
                        -DBoost_LIBRARY_DIRS:FILEPATH=${BOOST_LIB} \
@@ -281,7 +309,7 @@ if [ "x$install_uhd" = "x1" ]; then
                        -DENABLE_X300=False -DENABLE_OCTOCLOCK=False \
                        -DENABLE_TESTS=False -DENABLE_ORC=False 
     fi                   
-    make -j${NPROC}
+    make -j${NPROC} VERBOSE=1
     make -j${NPROC} install 
     cd ..
     cd ../../
