@@ -130,7 +130,7 @@ export LD=$TOOLCHAIN/bin/$TARGET-ld
 export RANLIB=$TOOLCHAIN/bin/$TARGET-ranlib
 export STRIP=$TOOLCHAIN/bin/$TARGET-strip
 elif [ "$target_system" = "clean" ]; then
-rm -rf *.tar.gz boost* uhd libusb iris fft* mbedtls libconfig libzmq lksctp-tools
+rm -rf *.tar.gz boost* uhd ncurses-6.2 libusb iris fft* mbedtls libconfig libzmq lksctp-tools
 exit
 elif [ "$target_system" = "host" ]; then
 export CC=gcc
