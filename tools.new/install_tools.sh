@@ -406,7 +406,7 @@ if [ "x$install_libzmq" = "x1" ]; then
     cd libzmq
     mkdir -p build 
     cd build 
-    cmake_build -DCMAKE_C_FLAGS='-g' -DCMAKE_CXX_FLAGS='-g' 
+    cmake_build -DCMAKE_C_FLAGS='-g' -DCMAKE_CXX_FLAGS='-g' -DENABLE_CURVE=OFF
     make -j${NPROC} install
     cd ..
     cd ..
