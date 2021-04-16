@@ -172,11 +172,11 @@ if [ "x$install_boost" = "x1" ]; then
         #sed -i -e "s/<static>/shared/g" build-android.sh
         export BOOST_DIR=$(pwd)/../boost_${BOOST_VERSION_TAG}
         export ABI_NAMES="${ANDROID_ABI}"
-        export LINKAGES="static"
+        export LINKAGES="shared"
         #bash ./build-android.sh --prefix=$(pwd)/install --arch=arm64-v8a --boost=${BLINK}.0 --toolchain=llvm
         #export WITH_LIBRARIES="--with-serialization --with-program_options"
         bash ./build.sh 
-        cp -rf build/install/libs/${ANDROID_ABI}/*.a build/install/libs/.
+        #cp -rf build/install/libs/${ANDROID_ABI}/*.* build/install/libs/.
         cd ..
     else
         cd boost_${BOOST_VERSION_TAG}
@@ -259,25 +259,27 @@ if [ "x$install_uhd" = "x1" ]; then
         for i in chrono date_time filesystem program_options regex system timer unit_test_framework serialization atomic thread; do 
         BLIBS="${BLIBS} boost_${i}${BOOST_POSTFIX}";
         done
+        BLIBS="${BLIBS} -lc++_shared"
         sed -i -e "s/\"\<pthread\>\"/\"\"/g" ../CMakeLists.txt
         sed -i -e "s/\"\<pthread\>\"/\"\"/g" -e "s/LIBUHD_APPEND_LIBS(pthread)//g" ../lib/utils/CMakeLists.txt
-        sed -i -e "s/Boost_LIBRARIES})/Boost_LIBRARIES} ${BLIBS})/g" ../utils/CMakeLists.txt 
+        #sed -i -e "s/Boost_LIBRARIES})/Boost_LIBRARIES} ${BLIBS})/g" ../utils/CMakeLists.txt 
         sed -i -e "s/libuhd_libs})/libuhd_libs} ${BLIBS})/g" ../lib/CMakeLists.txt 
+        sed -i -e "s/endif(DEFINED LIBUHD_OUTPUT_NAME)\s*$/set_target_properties(uhd PROPERTIES LINK_FLAGS \${CMAKE_EXE_LINKER_FLAGS})\nendif(DEFINED LIBUHD_OUTPUT_NAME) #No more/g" ../lib/CMakeLists.txt
         sed -i -e "s/libuhd_libs} uhd_rc)/libuhd_libs} uhd_rc ${BLIBS})/g" ../lib/CMakeLists.txt 
         sed -i -e "s/libuhd_libs} log)/libuhd_libs} log ${BLIBS})/g" ../lib/CMakeLists.txt 
-        CMAKE_EXE_LINKER_FLAGS="-L${BOOST_LIB} -lboost_atomic${BOOST_POSTFIX} -lboost_chrono${BOOST_POSTFIX} -lc++_shared " 
+        UHD_LDFLAGS="-L${BOOST_LIB}" 
+        echo "CMAKE_EXE_LINKER_FLAGS=${UHD_LDFLAGS}"
         cmake_build -DBUILD_SHARED=ON -DBUILD_SHARED_LIBS=ON -DNEON_SIMD_ENABLE=ON \
                    -DBoost_NO_BOOST_CMAKE=TRUE \
                    -DBoost_NO_SYSTEM_PATHS=TRUE \
                    -DANDROID=ON \
                    -DBOOST_VERSION=$BOOST_POSTFIX \
-                   -DBoost_THREAD_LIBRARY_RELEASE:FILEPATH=${BOOST_LIB} \
-                   -DBoost_LIBRARY_DIRS:FILEPATH=${BOOST_LIB} \
-                   -DBoost_INCLUDE_DIR:FILEPATH=${BOOST_INC} \
-                   -DBoost_INCLUDE_DIRS:FILEPATH=${BOOST_INC} \
+                   -DBoost_LIBRARY_DIRS=${BOOST_LIB} \
+                   -DBoost_LIBRARY_DIR=${BOOST_LIB} \
+                   -DBoost_INCLUDE_DIR=${BOOST_INC} \
                    -DLIBUSB_INCLUDE_DIRS=$LIBUSB/include/libusb-1.0 \
                    -DLIBUSB_LIBRARIES="$LIBUSB/lib/libusb-1.0.a"\
-                   -DENABLE_STATIC_LIBS=True -DENABLE_USRP1=False \
+                   -DENABLE_STATIC_LIBS=False -DENABLE_USRP1=False \
                    -DENABLE_USRP2=False -DENABLE_B100=False \
                    -DENABLE_X300=False -DENABLE_OCTOCLOCK=False \
                    -DENABLE_UTILS=ON \
@@ -292,12 +294,13 @@ if [ "x$install_uhd" = "x1" ]; then
         sed -i -e "s/libuhd_libs} log)/libuhd_libs} log ${BLIBS})/g" ../lib/CMakeLists.txt 
         CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -I${NCURSES_INC}/ncurses -I${NCURSES_INC}"
         CMAKE_EXE_LINKER_FLAGS="-L${NCURSES_LIB} -L${BOOST_LIB} -lncurses -lboost_atomic${BOOST_POSTFIX} -lboost_chrono${BOOST_POSTFIX} " 
+#-DBOOST_ROOT=$BOOST_DIR/install 
+#        -DBOOST_VERSION=$BOOST_POSTFIX 
         cmake_build -DBUILD_SHARED=ON -DBUILD_SHARED_LIBS=ON -DNEON_SIMD_ENABLE=ON \
-                       -DBOOST_ROOT=$BOOST_DIR/install \
-                       -DBOOST_VERSION=$BOOST_POSTFIX \
                        -DENABLE_EXAMPLES=OFF \
                        -DENABLE_UTILS=ON \
                        -DENABLE_TESTS=OFF \
+                       -DBoost_FOUND=ON \
                        -DBoost_THREAD_LIBRARY_RELEASE:FILEPATH=${BOOST_LIB} \
                        -DBoost_LIBRARY_DIRS:FILEPATH=${BOOST_LIB} \
                        -DBoost_INCLUDE_DIR:FILEPATH=${BOOST_INC} \
