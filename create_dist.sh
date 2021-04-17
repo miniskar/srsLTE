@@ -1,5 +1,6 @@
-TOOLS_DIR=tools.new
+TOOLS_DIR_NAME=tools.new
 SRSLTE_DIR=$PWD
+SRS_TDIR=${SRS_TOOLS_DIR:-${SRSLTE_DIR}/${TOOLS_DIR_NAME}}
 INST_DIR=install
 set -x
 echo 'export PATH=$PWD/bin:$PATH' > ${INST_DIR}/setup.source
@@ -59,20 +60,20 @@ echo '    fi ;' >> ${INST_DIR}/setup.source
 echo 'fi' >> ${INST_DIR}/setup.source
 
 
-#if [ -d $SRSLTE_DIR/$TOOLS_DIR/boost_for_android/install/arm64-v8a/lib ]; then
-#    cp -rf $SRSLTE_DIR/$TOOLS_DIR/boost_for_android/install/arm64-v8a/lib/* ${SRSLTE_DIR}/${INST_DIR}/lib/.
+#if [ -d $SRS_TDIR/boost_for_android/install/arm64-v8a/lib ]; then
+#    cp -rf $SRS_TDIR/boost_for_android/install/arm64-v8a/lib/* ${SRSLTE_DIR}/${INST_DIR}/lib/.
 #fi
-if [ -d $SRSLTE_DIR/$TOOLS_DIR/boost_for_android/build/install/libs/arm64-v8a ]; then
-    cp -rf $SRSLTE_DIR/$TOOLS_DIR/boost_for_android/build/install/libs/arm64-v8a/* ${SRSLTE_DIR}/${INST_DIR}/lib/.
+if [ -d $SRS_TDIR/boost_for_android/build/install/libs/arm64-v8a ]; then
+    cp -rf $SRS_TDIR/boost_for_android/build/install/libs/arm64-v8a/* ${SRSLTE_DIR}/${INST_DIR}/lib/.
 fi
 mkdir -p $INST_DIR/bin
 mkdir -p $INST_DIR/share
 mkdir -p $INST_DIR/lib 
 mkdir -p $INST_DIR/lib64 
 for i in boost_1_69_0 fftw-3.3.8 ncurses libconfig mbedtls libzmq lksctp-tools iris libusb uhd; do
-install_comp_dir=$SRSLTE_DIR/$TOOLS_DIR/$i/install
+install_comp_dir=$SRS_TDIR/$i/install
 if [ "$i" = "uhd" ]; then
-install_comp_dir=$SRSLTE_DIR/$TOOLS_DIR/$i/host/install
+install_comp_dir=$SRS_TDIR/$i/host/install
 cp -rf $install_comp_dir/share/* ${SRSLTE_DIR}/${INST_DIR}/share/. ;
 fi
 if [ -d $install_comp_dir/bin ]; then
