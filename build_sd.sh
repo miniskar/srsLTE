@@ -1,12 +1,14 @@
-TOOLS_DIR=tools.new
+TOOLS_DIR_NAME=tools.new
 SRSLTE_DIR=$PWD/../
-FFTW=$SRSLTE_DIR/$TOOLS_DIR/fftw-3.3.8/install
-SCTP=$SRSLTE_DIR/$TOOLS_DIR/lksctp-tools/install
-MBEDTLS=$SRSLTE_DIR/$TOOLS_DIR/mbedtls/install
-ZEROMQ=$SRSLTE_DIR/$TOOLS_DIR/libzmq/install
-LIBCONFIG=$SRSLTE_DIR/$TOOLS_DIR/libconfig/install
-IRIS=$SRSLTE_DIR/$TOOLS_DIR/iris/install
-UHD=$SRSLTE_DIR/$TOOLS_DIR/uhd/host/install
+#SRS_TDIR=$SRSLTE_DIR/$TOOLS_DIR_NAME
+SRS_TDIR=${SRS_TOOLS_DIR:-${SRSLTE_DIR}/${TOOLS_DIR_NAME}}
+FFTW=$SRS_TDIR/fftw-3.3.8/install
+SCTP=$SRS_TDIR/lksctp-tools/install
+MBEDTLS=$SRS_TDIR/mbedtls/install
+ZEROMQ=$SRS_TDIR/libzmq/install
+LIBCONFIG=$SRS_TDIR/libconfig/install
+IRIS=$SRS_TDIR/iris/install
+UHD=$SRS_TDIR/uhd/host/install
 FFTW3_DIR=${FFTW}
 export FFTW3_DIR=$FFTW
 
@@ -47,15 +49,15 @@ BOOST_VERSION=1_69_0
 #BOOST_VERSION=1_70
 BOOST_POSTFIX=
 if [ "$target_system" = "android" ]; then
-export BOOST=$SRSLTE_DIR/$TOOLS_DIR/boost_for_android/build/install
+export BOOST=$SRS_TDIR/boost_for_android/build/install
 export BOOST_LIB=${BOOST}/libs/arm64-v8a
 export BOOST_INC=${BOOST}/include
-#export BOOST=$SRSLTE_DIR/$TOOLS_DIR/boost_for_android/install
+#export BOOST=$SRS_TDIR/boost_for_android/install
 #export BOOST_INC=${BOOST}/${ANDROID_ABI}/include/boost-${BOOST_VERSION}
 #export BOOST_LIB=${BOOST}/${ANDROID_ABI}/lib
 #BOOST_POSTFIX=-clang-mt-a64-${BOOST_VERSION}
 else
-export BOOST=$SRSLTE_DIR/$TOOLS_DIR/boost_${BOOST_VERSION}/install
+export BOOST=$SRS_TDIR/boost_${BOOST_VERSION}/install
 export BOOST_INC=${BOOST}/include
 export BOOST_LIB=${BOOST}/lib
 fi
@@ -78,7 +80,11 @@ append_libs_to_cmake()
 }
 set -x 
 if [ "$target_system" = "android" ]; then
-    modules="mbedtls mbedcrypto fftw3f zmq sctp uhd config config++ mbedx509 log  c++_shared"
+    BLIBS=""
+    for i in chrono date_time filesystem program_options regex system timer unit_test_framework serialization atomic; do 
+	BLIBS="${BLIBS} boost_${i}${BOOST_POSTFIX}";
+    done
+    modules="mbedtls mbedcrypto fftw3f zmq sctp uhd config config++ mbedx509 log  ${BLIBS} c++_shared"
 else
     BLIBS=""
     for i in chrono date_time filesystem program_options regex system timer unit_test_framework atomic thread; do 
@@ -93,6 +99,7 @@ sed  -i -e "s/\<SHARED\>/STATIC/g" ${SRSLTE_DIR}/lib/src/phy/rf/CMakeLists.txt
 if [ "$target_system" = "android" ]; then
     sed -i -e "s/struct timespec now = {}/struct timeval now/g" -e "s/timespec_get/gettimeofday/g" -e "s/TIME_UTC/NULL/g"  ${SRSLTE_DIR}/lib/src/phy/utils/ringbuffer.c
     sed -i -e "s/\<connect\>(q->sockfd, \&/connect(q->sockfd, (struct sockaddr *)\&/g" ${SRSLTE_DIR}/lib/src/phy/io/netsink.c
+    sed -i -e "s/public thread/public srslte::thread/g" ${SRSLTE_DIR}/lib/test/upper/rlc_stress_test.cc
     sed -i -e "s/void vshuff_s16_even\>/void vshuff_s16_even_old/g"  -e "s/void vshuff_s32_even\>/void vshuff_s32_even_old/g" -e "s/void vshuff_s16_odd\>/void vshuff_s16_odd_old/g"  -e "s/void vshuff_s32_odd\>/void vshuff_s32_odd_old/g" -e "s/void vshuff_s32_idx\>/void vshuff_s32_idx_old/g" -e "s/void vshuff_s16_idx\>/void vshuff_s16_idx_old/g" -e "s/void vshuff_s16_even\>/void vshuff_s16_even/g" -e "s/vgetq_lane_s32\>/vgetq_lane_s32_old/g" -e "s/vgetq_lane_s16\>/vgetq_lane_s16_old/g" -e "s/vsetq_lane_s32\>/vsetq_lane_s32_old/g" -e "s/vsetq_lane_s16\>/vsetq_lane_s16_old/g" ${SRSLTE_DIR}/lib/src/phy/modem/demod_soft.c
     sed -i -e "s/\<pthread\>//g" ${SRSLTE_DIR}/lib/src/phy/ue/test/CMakeLists.txt
     sed -i -e "s/\<pthread\>//g" ${SRSLTE_DIR}/lib/src/phy/phch/test/CMakeLists.txt
