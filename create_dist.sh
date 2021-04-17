@@ -15,51 +15,6 @@ echo '    mkdir -p /dev/net' >> ${INST_DIR}/setup.source
 echo '    ln -s /dev/tun /dev/net/tun' >> ${INST_DIR}/setup.source
 echo 'fi' >> ${INST_DIR}/setup.source
 
-echo 'freq=$1' >> ${INST_DIR}/setup.source
-echo 'for i in 0 1 2 3 4 5 6 7; do' >> ${INST_DIR}/setup.source
-echo '    MINV=`cat /sys/devices/system/cpu/cpu$i/cpufreq/scaling_min_freq`;' >> ${INST_DIR}/setup.source
-echo '    MAXV=`cat /sys/devices/system/cpu/cpu$i/cpufreq/scaling_max_freq`;' >> ${INST_DIR}/setup.source
-echo '    VAL=$MAXV;' >> ${INST_DIR}/setup.source
-echo '    if [ "x$freq" = "xmin" ]; then' >> ${INST_DIR}/setup.source
-echo '        VAL=$MINV;' >> ${INST_DIR}/setup.source
-echo '    fi' >> ${INST_DIR}/setup.source
-echo '    echo "Core $i fMAX:$MAXV fMIN:$MINV set:$VAL";' >> ${INST_DIR}/setup.source
-echo '    echo "userspace" > /sys/devices/system/cpu/cpu$i/cpufreq/scaling_governor;' >> ${INST_DIR}/setup.source
-echo '    echo $VAL > /sys/devices/system/cpu/cpu$i/cpufreq/scaling_setspeed;' >> ${INST_DIR}/setup.source
-echo 'done' >> ${INST_DIR}/setup.source
-echo 'mode=$2' >> ${INST_DIR}/setup.source
-echo 'if [ "x$mode" != "x" ]; then' >> ${INST_DIR}/setup.source
-echo '    count=0;' >> ${INST_DIR}/setup.source
-echo '    for i in 0 1 2 3 4 5 6 7; do' >> ${INST_DIR}/setup.source
-echo '        MASK=`echo $((0x1 << $i))`;' >> ${INST_DIR}/setup.source
-echo '        VAL=`echo $((($mode & $MASK) != 0))`;' >> ${INST_DIR}/setup.source
-echo '        if [ "x$VAL" = "x1" ]; then' >> ${INST_DIR}/setup.source
-echo '            count=$((count+1))' >> ${INST_DIR}/setup.source
-echo '        fi' >> ${INST_DIR}/setup.source
-echo '    done' >> ${INST_DIR}/setup.source
-echo '    if (( count < 2 )); then' >> ${INST_DIR}/setup.source
-echo '        if (( mode >= 0xF )); then' >> ${INST_DIR}/setup.source
-echo '            count=3' >> ${INST_DIR}/setup.source
-echo '        fi' >> ${INST_DIR}/setup.source
-echo '    fi' >> ${INST_DIR}/setup.source
-echo '    if (( count >= 2 )); then' >> ${INST_DIR}/setup.source
-echo '        for i in 0 1 2 3 4 5 6 7; do' >> ${INST_DIR}/setup.source
-echo '            MASK=`echo $((0x1 << $i))`;' >> ${INST_DIR}/setup.source
-echo '            VAL=`echo $((($mode & $MASK) != 0))`;' >> ${INST_DIR}/setup.source
-echo '            if [ "x$VAL" = "x1" ]; then' >> ${INST_DIR}/setup.source
-echo '                echo "Core $i Enabled";' >> ${INST_DIR}/setup.source
-echo '                echo "1" > /sys/devices/system/cpu/cpu$i/online' >> ${INST_DIR}/setup.source
-echo '            else' >> ${INST_DIR}/setup.source
-echo '                echo "Core $i Disabled";' >> ${INST_DIR}/setup.source
-echo '                echo "0" > /sys/devices/system/cpu/cpu$i/online' >> ${INST_DIR}/setup.source
-echo '            fi' >> ${INST_DIR}/setup.source
-echo '        done' >> ${INST_DIR}/setup.source
-echo '    else' >> ${INST_DIR}/setup.source
-echo '        echo "Mode:${mode} make the processor very slow"' >> ${INST_DIR}/setup.source
-echo '    fi ;' >> ${INST_DIR}/setup.source
-echo 'fi' >> ${INST_DIR}/setup.source
-
-
 #if [ -d $SRS_TDIR/boost_for_android/install/arm64-v8a/lib ]; then
 #    cp -rf $SRS_TDIR/boost_for_android/install/arm64-v8a/lib/* ${SRSLTE_DIR}/${INST_DIR}/lib/.
 #fi
