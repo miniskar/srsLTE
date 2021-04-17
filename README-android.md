@@ -22,6 +22,7 @@ Makesure to have ARM cross compiler toolchain (aarch64-linux-gnu-*) 7.5.0
     $ cd ..
     $ sh create_dist.sh 
     ```
+The rootfs binaries are available in install.tar.gz
     
 ### Compile using Android NDK (aarch64-linux-android*) toolchain (Alternative way)
 1. Setup NDK toolchain either using below file or commands given below
@@ -63,9 +64,36 @@ Makesure to have ARM cross compiler toolchain (aarch64-linux-gnu-*) 7.5.0
     ```
     The android binaries are available in install.tar.gz
     
-
-
-The rootfs binaries are available in install.tar.gz
+## Docker container (docker machine)
+### Rootfs based build 
+    ```
+    $ docker run -it --rm  srslte_snapdragon:dev0
+    nqx@...:~$ source setup_srslte_rootfs.sh
+    nqx@...:~$ git clone https://github.com/miniskar/srsLTE
+    nqx@...:~$ cd srsLTE
+    nqx@...:~$ mkdir build
+    nqx@...:~$ cd build
+    nqx@...:~$ sh ../build_sd.sh rootfs
+    nqx@...:~$ make -j16
+    nqx@...:~$ make -j16 install
+    nqx@...:~$ cd ..
+    nqx@...:~$ sh create_dist.sh
+    ```
+    
+### Android NDK based build 
+    ```
+    $ docker run -it --rm  srslte_snapdragon:dev0
+    nqx@...:~$ source setup_srslte_android.sh
+    nqx@...:~$ git clone https://github.com/miniskar/srsLTE
+    nqx@...:~$ cd srsLTE
+    nqx@...:~$ mkdir build
+    nqx@...:~$ cd build
+    nqx@...:~$ sh ../build_sd.sh android
+    nqx@...:~$ make -j16
+    nqx@...:~$ make -j16 install
+    nqx@...:~$ cd ..
+    nqx@...:~$ sh create_dist.sh
+    ```
 
 ## Setup 
 ### Copy the build binaries (Same steps for both qualcomm boards)
